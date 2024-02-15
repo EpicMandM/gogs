@@ -8,7 +8,7 @@
 
 The Gogs (`/gɑgz/`) project aims to build a simple, stable and extensible self-hosted Git service that can be set up in the most painless way. With Go, this can be done with an independent binary distribution across all platforms that Go supports, including Linux, macOS, Windows and ARM-based systems.
 
-## 📡 Overviewing
+## 📡 Overview
 
 - Please visit [our home page](https://gogs.io) for user documentation.
 - Please refer to [CHANGELOG.md](CHANGELOG.md) for list of changes in each releases.
