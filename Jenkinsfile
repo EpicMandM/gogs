@@ -23,7 +23,42 @@ pipeline {
                                 verbose: true,
                                 transfers: [
                                     sshTransfer(
-                                        execCommand: "cd ~/gogs_deploy && docker-compose down && rm -rf ~/gogs_deploy"
+                                        execCommand: "cd ~/gogs_compose/test && docker-compose down -v && cd .. && cd ~/gogs_compose/deploy && docker-compose down -v && cd ../../ && rm -rf ~/gogs_compose"
+                                    )
+                                ]
+                            )
+                        ]
+                    )
+            }
+        }
+        stage('Tests')
+        {
+            steps {
+                sshPublisher(
+                        publishers: [
+                            sshPublisherDesc(
+                                configName: "vm", 
+                                verbose: true,
+                                transfers: [
+                                    sshTransfer(
+                                        execCommand: "git clone git@github.com:EpicMandM/gogs_compose.git && cd ~/gogs_compose/test && docker-compose up"
+                                    )
+                                ]
+                            )
+                        ]
+                    )
+            }
+        }
+        stage('Clean tests') {
+            steps {
+                sshPublisher(
+                        publishers: [
+                            sshPublisherDesc(
+                                configName: "vm", 
+                                verbose: true,
+                                transfers: [
+                                    sshTransfer(
+                                        execCommand: "cd ~/gogs_compose/test && docker-compose down -v && cd .. && cd ~/gogs_compose/deploy && docker-compose down -v && cd ../../ && rm -rf ~/gogs_compose"
                                     )
                                 ]
                             )
@@ -40,7 +75,7 @@ pipeline {
                                 verbose: true,
                                 transfers: [
                                     sshTransfer(
-                                        execCommand: "git clone -b main --single-branch git@github.com:EpicMandM/gogs_compose.git ./gogs_deploy && cd ~/gogs_compose/deploy && docker-compose up"
+                                        execCommand: "git clone git@github.com:EpicMandM/gogs_compose.git && cd ~/gogs_compose/deploy && docker-compose up -d"
                                     )
                                 ]
                             )
