@@ -1,0 +1,38 @@
+version: "3.9"  # Use version 3.9 to leverage the latest features as of my last update
+
+services:
+  builder:
+    image: epicmandm/gogs_bm  # Assuming this is the builder image
+    volumes:
+      - ./script/script.sh:/script.sh  # Mount the script from the host to the container
+      - app-data:/app  # Use a shared volume for the build output
+
+  gogs:
+    image: epicmandm/gogs_deploy  # Assuming this is the runtime/deployment image
+    depends_on:
+      - builder
+      - mariadb
+    ports:
+      - "3000:3000"
+    volumes:
+      - app-data:/app # Access the shared volume for deployment
+      - ./gogs-config:/app/custom/conf
+    restart: always
+
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: gogs
+
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql  # Persistent volume for MariaDB data
+    restart: always  # Ensures the container restarts automatically if it stops
+
+volumes:
+  app-data:  # Define a named volume for sharing data between services
+  mariadb_data:
+    driver: local
