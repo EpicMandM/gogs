@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Start the services in detached mode
-docker-compose up --detach
+docker compose up --detach
 
 # Function to display logs in the background
 display_logs() {
-    docker-compose logs --follow
+    docker compose logs --follow
 }
 
 # Start displaying logs in the background
@@ -21,7 +21,7 @@ tail_logs_until_string() {
     # Loop until completion string is found
     while true; do
         # Tail logs of all services and grep for completion string
-        docker-compose logs --tail=0 --follow | grep -q "$completion_string" && break
+        docker compose logs --tail=0 --follow | grep -q "$completion_string" && break
         # Sleep for a short while before checking again
         sleep 1
     done
