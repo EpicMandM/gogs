@@ -23,7 +23,7 @@ pipeline {
     stages {
         stage('Clean previous') {
             steps {
-                executeSSHCommand("cd ~/gogs && docker-compose down -v && cd .. && rm -rf ~/gogs_compose")
+                executeSSHCommand("cd ~/gogs && docker-compose down -v && cd .. && rm -rf ~/gogs")
             }
         }
         stage('Tests, Build & Deploy') {
