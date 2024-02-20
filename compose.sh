@@ -31,6 +31,7 @@ tail_logs_until_string() {
     
     # Stop the background process
     kill "$background_pid"
+    exit 0
 }
 
 # Call the function to monitor logs until the completion string appears
