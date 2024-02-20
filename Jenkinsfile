@@ -24,12 +24,6 @@ pipeline {
         pollSCM('* * * * *')
     }
     stages {
-        stage('GitSCM checkout') {
-            steps { 
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], 
-                userRemoteConfigs: [[url: 'https://github.com/EpicMandM/gogs.git']]])
-            }
-        }
         stage('Clean previous') {
             steps {
                 executeSSHCommand("cd ~/gogs_compose/test && docker-compose down -v && cd .. && cd ~/gogs_compose/deploy && docker-compose down -v && cd ../../ && rm -rf ~/gogs_compose")
