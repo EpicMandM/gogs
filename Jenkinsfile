@@ -28,7 +28,7 @@ pipeline {
         }
         stage('Tests, Build & Deploy') {
             steps {
-                executeSSHCommand("git clone https://github.com/EpicMandM/gogs.git && cd ~/gogs && docker-compose up --detach && docker-compose logs --follow gogs_builder_1")
+                executeSSHCommand("git clone https://github.com/EpicMandM/gogs.git && cd ~/gogs && chmod +x ./compose.sh && ./compose.sh")
             }
         }
         }
