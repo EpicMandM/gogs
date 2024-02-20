@@ -3,13 +3,16 @@
 # Start the services in detached mode
 docker-compose up --detach
 
-# Function to continuously display logs in the background
+# Function to display logs in the background
 display_logs() {
     docker-compose logs --follow
 }
 
 # Start displaying logs in the background
 display_logs &
+
+# Store the background process ID
+background_pid=$!
 
 # Function to monitor logs until a specific string appears
 tail_logs_until_string() {
@@ -24,7 +27,10 @@ tail_logs_until_string() {
     done
 
     # Print a message indicating the completion string is found
-    echo "Completion string found. Detaching from logs."
+    echo "Completion string found. Stopping log display."
+    
+    # Stop the background process
+    kill "$background_pid"
 }
 
 # Call the function to monitor logs until the completion string appears
