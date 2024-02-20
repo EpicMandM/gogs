@@ -1,4 +1,4 @@
-version: "3.9"  # Use version 3.9 to leverage the latest features as of my last update
+version: "3.3"  
 
 services:
   builder:
