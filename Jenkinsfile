@@ -23,23 +23,13 @@ pipeline {
     stages {
         stage('Clean previous') {
             steps {
-                executeSSHCommand("cd ~/gogs_compose/test && docker-compose down -v && cd .. && cd ~/gogs_compose/deploy && docker-compose down -v && cd ../../ && rm -rf ~/gogs_compose")
+                executeSSHCommand("cd ~/gogs && docker-compose down -v && cd .. && rm -rf ~/gogs_compose")
             }
         }
-        stage('Tests') {
+        stage('Tests, Build & Deploy') {
             steps {
-                executeSSHCommand("git clone git@github.com:EpicMandM/gogs_compose.git && cd ~/gogs_compose/test && docker-compose up")
+                executeSSHCommand("git clone https://github.com/EpicMandM/gogs.git && cd ~/gogs && docker-compose up")
             }
         }
-        stage('Clean tests') {
-            steps {
-                executeSSHCommand("cd ~/gogs_compose/test && docker-compose down -v && cd .. && cd ~/gogs_compose/deploy && docker-compose down -v && cd ../../ && rm -rf ~/gogs_compose")
-            }
-        }
-        stage('Build & Deploy') {
-            steps {
-                executeSSHCommand("git clone git@github.com:EpicMandM/gogs_compose.git && cd ~/gogs_compose/deploy && docker-compose up -d")
-            }
         }
     }
-}
