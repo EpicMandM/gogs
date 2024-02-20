@@ -18,6 +18,7 @@ services:
       - app-data:/app # Access the shared volume for deployment
       - ./gogs-config:/app/custom/conf
     restart: always
+    detach: true
 
   mariadb:
     image: mariadb:latest
@@ -25,12 +26,13 @@ services:
     environment:
       MARIADB_ROOT_PASSWORD: root
       MARIADB_DATABASE: gogs
-
     ports:
       - "3306:3306"
     volumes:
       - mariadb_data:/var/lib/mysql  # Persistent volume for MariaDB data
     restart: always  # Ensures the container restarts automatically if it stops
+    detach: true
+    
 
 volumes:
   app-data:  # Define a named volume for sharing data between services
