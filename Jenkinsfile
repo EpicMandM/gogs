@@ -10,6 +10,9 @@ pipeline {
                     image: golang:1.20-bookworm
                     command: ["sleep"]
                     args: ["30d"]
+                    env:
+                      - name: CGO_CFLAGS
+                        value: "-g -O2 -Wno-return-local-addr"
                     volumeMounts:
                       - name: workspace-volume
                         mountPath: /workspace
