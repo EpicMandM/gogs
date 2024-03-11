@@ -1,35 +1,80 @@
-def executeSSHCommand(String command) {
-    sshPublisher(
-        publishers: [
-            sshPublisherDesc(
-                configName: "vm", 
-                verbose: true,
-                transfers: [
-                    sshTransfer(
-                        execCommand: command
-                    )
-                ]
-            )
-        ]
-    )
-}
-
 pipeline {
-    agent any
-    options {
-        buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
-        disableConcurrentBuilds()
+    agent {
+        kubernetes {
+            yaml """
+                apiVersion: v1
+                kind: Pod
+                spec:
+                  containers:
+                  - name: alpine
+                    image: alpine:3.15
+                    command:
+                    - sleep
+                    args:
+                    - 30d
+                  - name: kaniko
+                    image: gcr.io/kaniko-project/executor:debug
+                    command:
+                    - /busybox/cat
+                    tty: true
+                    volumeMounts:
+                      - name: kaniko-secret
+                        mountPath: /kaniko/.docker
+                  volumes:
+                    - name: kaniko-secret
+                      secret:
+                        secretName: regc99dred
+                        items:
+                          - key: .dockerconfigjson
+                            path: config.json
+            """
+        }
     }
     stages {
-        stage('Clean previous') {
+
+                stage('Install dependencies') {
             steps {
-                executeSSHCommand("cd ~/gogs && docker compose down && cd .. && rm -rf ~/gogs")
+                container('alpine') {
+                   
+                }
             }
         }
-        stage('Tests, Build & Deploy') {
+        
+        stage('Build') {
             steps {
-                executeSSHCommand("git clone https://github.com/EpicMandM/gogs.git && cd ~/gogs && chmod +x ./compose.sh && ./compose.sh")
+                container('alpine') {
+                    sh 'go build -o gogs -buildvcs=false'
+                }
             }
         }
+        
+        stage('Test') {
+            steps {
+                container('alpine') {
+                    sh 'go test -v -cover ./...'
+                }
+            }
         }
+        
+        stage('Dockerfile Build & Push Image') {
+              steps {
+                container('kaniko') {
+                  script {
+                    sh '''
+                    /kaniko/executor --dockerfile `pwd`/Dockerfile_app \
+                                     --context `pwd` \
+                                     --destination=petrobubka/my_gogs_image:${BUILD_NUMBER}
+                    '''
+                  }
+                }
+              }
+            }
+        stage('Deploy to K8S') {     
+              steps {
+                    sh 'kubectl delete deployment gogs'
+                    sh 'sed -i "s/<TAG>/${BUILD_NUMBER}/" gogs-deployment.yaml'
+                    sh 'kubectl apply -f gogs-deployment.yaml -n default'
+              }
+            }
     }
+}
