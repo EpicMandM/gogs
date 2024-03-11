@@ -39,7 +39,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 container('golang') {
-                    git 'https://github.com/EpicMandM/gogs.git'
+                    sh 'git clone https://github.com/EpicMandM/gogs.git'
                 }
             }
         }
