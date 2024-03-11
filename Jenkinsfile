@@ -47,7 +47,7 @@ pipeline {
         stage('Build') {
             steps {
                 container('golang') {
-                    sh 'cd /workspace/your-repo && go build -o gogs -buildvcs=false'
+                    sh 'cd ./gogs && go build -o gogs -buildvcs=false'
                 }
             }
         }
