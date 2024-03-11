@@ -1,44 +1,18 @@
-FROM golang:alpine3.17 AS binarybuilder
-RUN apk --no-cache --no-progress add --virtual \
-  build-deps \
-  build-base \
-  git \
-  linux-pam-dev
+FROM alpine:3.15
 
-WORKDIR /gogs.io/gogs
-COPY . .
+RUN echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
+RUN echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
+RUN apk update
+RUN apk add --no-cache binutils go mysql-client git openssh
 
-RUN ./docker/build/install-task.sh
-RUN TAGS="cert pam" task build
 
-FROM alpine:3.17
-RUN apk --no-cache --no-progress add \
-  bash \
-  ca-certificates \
-  curl \
-  git \
-  linux-pam \
-  openssh \
-  s6 \
-  shadow \
-  socat \
-  tzdata \
-  rsync
+RUN mkdir /gogs
+WORKDIR /gogs
+COPY . /gogs
 
-ENV GOGS_CUSTOM /data/gogs
+EXPOSE 3000
+EXPOSE 22
 
-# Configure LibC Name Service
-COPY docker/nsswitch.conf /etc/nsswitch.conf
+RUN ls  /gogs
 
-WORKDIR /app/gogs
-COPY docker ./docker
-COPY --from=binarybuilder /gogs.io/gogs/gogs .
-
-RUN ./docker/build/finalize.sh
-
-# Configure Docker Container
-VOLUME ["/data", "/backup"]
-EXPOSE 22 3000
-HEALTHCHECK CMD (curl -o /dev/null -sS http://localhost:3000/healthcheck) || exit 1
-ENTRYPOINT ["/app/gogs/docker/start.sh"]
-CMD ["/bin/s6-svscan", "/app/gogs/docker/s6/"]
+CMD ["/gogs/gogs", "web"]
