@@ -14,7 +14,7 @@ pipeline {
                       - name: CGO_CFLAGS
                         value: "-g -O2 -Wno-return-local-addr"
                   - name: kaniko
-                    image: gcr.io/kaniko-project/executor:latest
+                    image: gcr.io/kaniko-project/executor:debug
                     command: ["/busybox/cat"]
                     tty: true
                     volumeMounts:
