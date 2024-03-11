@@ -6,43 +6,44 @@ pipeline {
                 kind: Pod
                 spec:
                   containers:
-                  - name: alpine
-                    image: alpine:3.15
+                - name: golang
+                    image: golang:1.20-bookworm
                     command:
                     - sleep
                     args:
                     - 30d
+                    env:
+                    - name: CGO_CFLAGS
+                      value: "-g -O2 -Wno-return-local-addr"
                   - name: kaniko
-                    image: gcr.io/kaniko-project/executor:debug
+                    image: gcr.io/kaniko-project/executor:latest
                     command:
                     - /busybox/cat
                     tty: true
                     volumeMounts:
                       - name: kaniko-secret
                         mountPath: /kaniko/.docker
+                      - name: dockerfile-storage
+                        mountPath: /workspace
+                  restartPolicy: Never
                   volumes:
                     - name: kaniko-secret
                       secret:
-                        secretName: regc99dred
+                        secretName: dockercred
                         items:
                           - key: .dockerconfigjson
                             path: config.json
+                    - name: dockerfile-storage
+                      persistentVolumeClaim:
+                        claimName: dockerfile-claim
             """
         }
     }
     stages {
-
-                stage('Install dependencies') {
-            steps {
-                container('alpine') {
-                   
-                }
-            }
-        }
         
         stage('Build') {
             steps {
-                container('alpine') {
+                container('golang') {
                     sh 'go build -o gogs -buildvcs=false'
                 }
             }
@@ -50,7 +51,7 @@ pipeline {
         
         stage('Test') {
             steps {
-                container('alpine') {
+                container('golang') {
                     sh 'go test -v -cover ./...'
                 }
             }
@@ -61,20 +62,19 @@ pipeline {
                 container('kaniko') {
                   script {
                     sh '''
-                    /kaniko/executor --dockerfile `pwd`/Dockerfile_app \
+                    /kaniko/executor --dockerfile `pwd`/Dockerfile \
                                      --context `pwd` \
-                                     --destination=petrobubka/my_gogs_image:${BUILD_NUMBER}
+                                     --destination=epicmandm/gogs:latest
                     '''
                   }
                 }
               }
             }
-        stage('Deploy to K8S') {     
-              steps {
-                    sh 'kubectl delete deployment gogs'
-                    sh 'sed -i "s/<TAG>/${BUILD_NUMBER}/" gogs-deployment.yaml'
-                    sh 'kubectl apply -f gogs-deployment.yaml -n default'
-              }
-            }
+        // stage('Deploy to K8S') {     
+        //       steps {
+        //             sh 'kubectl delete deployment gogs'
+        //             sh 'kubectl apply -f gogs-deployment.yaml -n default'
+        //       }
+        //     }
     }
 }
