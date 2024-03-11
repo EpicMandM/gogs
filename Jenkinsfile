@@ -6,19 +6,16 @@ pipeline {
                 kind: Pod
                 spec:
                   containers:
-                - name: golang
+                  - name: golang
                     image: golang:1.20-bookworm
-                    command:
-                    - sleep
-                    args:
-                    - 30d
+                    command: ["sleep"]
+                    args: ["30d"]
                     env:
-                    - name: CGO_CFLAGS
-                      value: "-g -O2 -Wno-return-local-addr"
+                      - name: CGO_CFLAGS
+                        value: "-g -O2 -Wno-return-local-addr"
                   - name: kaniko
                     image: gcr.io/kaniko-project/executor:latest
-                    command:
-                    - /busybox/cat
+                    command: ["/busybox/cat"]
                     tty: true
                     volumeMounts:
                       - name: kaniko-secret
@@ -27,15 +24,15 @@ pipeline {
                         mountPath: /workspace
                   restartPolicy: Never
                   volumes:
-                    - name: kaniko-secret
-                      secret:
-                        secretName: dockercred
-                        items:
-                          - key: .dockerconfigjson
-                            path: config.json
-                    - name: dockerfile-storage
-                      persistentVolumeClaim:
-                        claimName: dockerfile-claim
+                  - name: kaniko-secret
+                    secret:
+                      secretName: dockercred
+                      items:
+                      - key: .dockerconfigjson
+                        path: config.json
+                  - name: dockerfile-storage
+                    persistentVolumeClaim:
+                      claimName: dockerfile-claim
             """
         }
     }
@@ -58,23 +55,24 @@ pipeline {
         }
         
         stage('Dockerfile Build & Push Image') {
-              steps {
+            steps {
                 container('kaniko') {
-                  script {
-                    sh '''
-                    /kaniko/executor --dockerfile `pwd`/Dockerfile \
-                                     --context `pwd` \
-                                     --destination=epicmandm/gogs:latest
-                    '''
-                  }
+                    script {
+                        sh '''
+                        /kaniko/executor --dockerfile $(pwd)/Dockerfile \
+                                         --context $(pwd) \
+                                         --destination=epicmandm/gogs:latest
+                        '''
+                    }
                 }
-              }
             }
+        }
+        // Uncomment and modify this stage as needed for your deployment
         // stage('Deploy to K8S') {     
-        //       steps {
-        //             sh 'kubectl delete deployment gogs'
-        //             sh 'kubectl apply -f gogs-deployment.yaml -n default'
-        //       }
+        //     steps {
+        //         sh 'kubectl delete deployment gogs'
+        //         sh 'kubectl apply -f gogs-deployment.yaml -n default'
         //     }
+        // }
     }
 }
