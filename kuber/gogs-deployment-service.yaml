@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gogs
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gogs
+  template:
+    metadata:
+      labels:
+        app: gogs
+    spec:
+      containers:
+      - name: gogs
+        image: epicmandm/gogs:latest
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - name: gogs-config-volume
+          mountPath: /gogs/custom/conf
+        - name: app-data
+          mountPath: /gogs
+      volumes:
+      - name: gogs-config-volume
+        configMap:
+          name: gogs-config
+      - name: app-data
+        persistentVolumeClaim:
+          claimName: app-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gogs
+spec:
+  type: ClusterIP 
+  ports:
+  - port: 3000
+    targetPort: 3000
+  selector:
+    app: gogs
+

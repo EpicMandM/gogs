@@ -1,0 +1,21 @@
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gogs-ingress
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # Add any other specific annotations you might need for ingress-nginx
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: gogs 
+            port:
+              number: 3000
+
