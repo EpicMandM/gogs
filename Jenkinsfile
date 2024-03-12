@@ -68,7 +68,7 @@ pipeline {
                 container('kaniko') {
                     script {
                         sh '''
-                        cd /workspace/your-repo
+                        cd /workspace/gogs
                         /kaniko/executor --dockerfile $(pwd)/Dockerfile \
                                          --context $(pwd) \
                                          --destination=epicmandm/gogs:latest
