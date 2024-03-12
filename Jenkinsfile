@@ -69,8 +69,8 @@ pipeline {
                     script {
                         sh '''
                         cd /workspace/gogs
-                        /kaniko/executor --dockerfile $(pwd)/Dockerfile \
-                                         --context $(pwd) \
+                        /kaniko/executor --dockerfile `pwd`/Dockerfile \
+                                         --context `pwd` \
                                          --destination=epicmandm/gogs:latest
                         '''
                     }
