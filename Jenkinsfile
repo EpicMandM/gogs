@@ -79,7 +79,7 @@ pipeline {
         }
         stage('Deploy to K8S') {     
               steps {
-                sh 'kubectl apply -f ./kuber/gogs-deployment.yaml -n default'
+                sh 'kubectl apply -f ./kuber/gogs-deployment-service.yaml -n default'
               }
             }
     }
