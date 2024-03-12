@@ -38,6 +38,19 @@ pipeline {
             """
         }
     }
+    stage('Prepare kubectl') {
+            steps {
+                script {
+                    sh 'curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"'
+                    sh 'chmod +x kubectl'
+                    sh 'mkdir -p ~/.local/bin'
+                    sh 'mv ./kubectl ~/.local/bin/kubectl'
+                    environment {
+                        PATH = "$PATH:~/.local/bin"
+                    }
+                }
+            }
+    }
     stages {
         stage('Clone Repository') {
             steps {
