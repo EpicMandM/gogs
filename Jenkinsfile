@@ -58,7 +58,7 @@ pipeline {
         stage('Test') {
             steps {
                 container('golang') {
-                    sh 'cd /workspace/your-repo && go test -v -cover ./...'
+                    sh 'cd ./gogs && go test -v -cover ./...'
                 }
             }
         }
