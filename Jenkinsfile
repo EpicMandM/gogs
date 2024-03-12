@@ -42,7 +42,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 container('golang') {
-                    sh 'git clone https://github.com/EpicMandM/gogs.git'
+                    sh 'git clone https://github.com/EpicMandM/gogs.git /workspace/gogs'
                 }
             }
         }
@@ -50,7 +50,7 @@ pipeline {
         stage('Build') {
             steps {
                 container('golang') {
-                    sh 'cd ./gogs && go build -o gogs -buildvcs=false'
+                    sh 'cd /workspace/gogs && go build -o gogs -buildvcs=false'
                 }
             }
         }
@@ -58,7 +58,7 @@ pipeline {
         stage('Test') {
             steps {
                 container('golang') {
-                    sh 'cd ./gogs && go test -v -cover ./...'
+                    sh 'cd /workspace/gogs && go test -v -cover ./...'
                 }
             }
         }
