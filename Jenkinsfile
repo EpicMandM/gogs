@@ -49,6 +49,7 @@ pipeline {
             steps {
                 container('golang') {
                     sh 'git clone https://github.com/EpicMandM/gogs.git /workspace/gogs'
+                    sh 'ls -l /workspace/gogs' // Debugging: Verify the gogs executable is present
                 }
             }
         }
@@ -75,6 +76,7 @@ pipeline {
                     script {
                         sh '''
                         cd /workspace/gogs
+                        ls -l  // Debugging: Verify the files before building with Kaniko
                         /kaniko/executor --dockerfile `pwd`/Dockerfile \
                                          --context `pwd` \
                                          --destination=epicmandm/gogs:latest
