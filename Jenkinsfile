@@ -45,8 +45,8 @@ pipeline {
                 sh 'chmod +x kubectl'
                 sh 'mkdir -p ~/.local/bin'
                 sh 'mv ./kubectl ~/.local/bin/kubectl'
-                environment {
-                    PATH = "$PATH:~/.local/bin"
+                withEnv(['PATH+LOCAL=/root/.local/bin']) {
+                    sh 'echo $PATH'
                 }
             }
         }
