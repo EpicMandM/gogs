@@ -17,8 +17,8 @@ RUN apk update && \
 # Set the working directory
 WORKDIR /gogs
 
-# Copy the current directory contents into the container at /gogs
-COPY . /gogs
+COPY gogs /gogs
+COPY conf /gogs/conf
 
 # Expose ports for web and SSH
 EXPOSE 3000 22
