@@ -76,7 +76,9 @@ pipeline {
                     script {
                         sh '''
                         cd /workspace/gogs
-                        ls -l  // Debugging: Verify the files before building with Kaniko
+                        ls -l
+                        ls /workspace
+                        ls /workspace/gogs
                         /kaniko/executor --dockerfile `pwd`/Dockerfile \
                                          --context `pwd` \
                                          --destination=epicmandm/gogs:latest
