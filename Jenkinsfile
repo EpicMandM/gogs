@@ -43,11 +43,6 @@ pipeline {
             steps {
                 sh 'curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"'
                 sh 'chmod +x kubectl'
-                sh 'mkdir -p ~/.local/bin'
-                sh 'mv ./kubectl ~/.local/bin/kubectl'
-                withEnv(['PATH+LOCAL=/root/.local/bin']) {
-                    sh 'echo $PATH'
-                }
             }
         }
         stage('Clone Repository') {
@@ -90,7 +85,7 @@ pipeline {
         }
         stage('Deploy to K8S') {     
             steps {
-                sh 'kubectl apply -f ./kuber/gogs-deployment-service.yaml -n default'
+                sh './kubectl apply -f ./kuber/gogs-deployment-service.yaml -n default'
             }
         }
     }
