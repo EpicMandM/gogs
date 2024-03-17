@@ -1,27 +1,27 @@
- FROM alpine:3.15
+# Use a specific version of Alpine
+FROM alpine:3.15
 
-# Update the repository URLs
-RUN echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories && \
-    echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
+# Install necessary packages and glibc
+ENV GLIBC_REPO=https://github.com/sgerrand/alpine-pkg-glibc \
+    GLIBC_VERSION=2.34-r0
 
-# Install necessary packages
 RUN apk update && \
-    apk add --no-cache binutils go mysql-client git openssh
+    apk add --no-cache mariadb-client git openssh ca-certificates curl && \
+    for pkg in glibc-${GLIBC_VERSION} glibc-bin-${GLIBC_VERSION}; do \
+        curl -sSL ${GLIBC_REPO}/releases/download/${GLIBC_VERSION}/${pkg}.apk -o /tmp/${pkg}.apk; \
+    done && \
+    apk add --allow-untrusted /tmp/*.apk && \
+    rm -v /tmp/*.apk /var/cache/apk/* && \
+    /usr/glibc-compat/sbin/ldconfig /lib /usr/glibc-compat/lib
 
-# Create the /gogs directory and set it as the working directory
-RUN mkdir /gogs
+# Set the working directory
 WORKDIR /gogs
 
-# Copy only the gogs executable and the conf directory
-COPY gogs /gogs
-COPY conf /gogs/conf
+# Copy the current directory contents into the container at /gogs
+COPY . /gogs
 
-# Expose the necessary ports
-EXPOSE 3000
-EXPOSE 22
+# Expose ports for web and SSH
+EXPOSE 3000 22
 
-# List contents for debugging
-RUN ls /gogs
-
-# Command to run when the container starts
+# Define the entrypoint
 CMD ["/gogs/gogs", "web"]
