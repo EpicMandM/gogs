@@ -1,4 +1,4 @@
-FROM alpine:3.15
+ FROM alpine:3.15
 
 # Update the repository URLs
 RUN echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories && \
@@ -13,7 +13,7 @@ RUN mkdir /gogs
 WORKDIR /gogs
 
 # Copy only the gogs executable and the conf directory
-COPY gogs /gogs/gogs
+COPY gogs /gogs/
 COPY conf /gogs/conf
 
 # Expose the necessary ports
