@@ -10,6 +10,5 @@ scripts/**
 .editorconfig
 .gitignore
 Dockerfile*
-gogs
 
 !Taskfile.yml
