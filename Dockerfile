@@ -13,7 +13,7 @@ RUN mkdir /gogs
 WORKDIR /gogs
 
 # Copy only the gogs executable and the conf directory
-COPY gogs /gogs/
+COPY gogs /gogs
 COPY conf /gogs/conf
 
 # Expose the necessary ports
