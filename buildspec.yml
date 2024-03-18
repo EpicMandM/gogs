@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      go: latest
+  pre_build:
+    commands:
+      - echo "Installing dependencies..."
+      - go mod tidy
+  build:
+    commands:
+      - echo "Building the application..."
+      - go build -o gogs -buildvcs=false
+  post_build:
+    commands:
+      - echo "Build completed on `date`"
+
+artifacts:
+  files:
+    - gogs
+  discard-paths: yes
