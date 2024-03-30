@@ -1,1 +1,1 @@
-web: ./gogs web
+web: chmod +x ./gogs && ./gogs web
