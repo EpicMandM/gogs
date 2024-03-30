@@ -4,7 +4,7 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket  = "gogs-terraform-state-bucket"
+    bucket  = "gogs-terraform-state"
     key     = "build/terraform.tfstate"
     region  = "us-east-1"
     profile = "terraform"
