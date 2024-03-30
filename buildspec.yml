@@ -2,21 +2,12 @@ version: 0.2
 
 phases:
   install:
-    runtime-versions:
-      golang: 1.20
-  pre_build:
     commands:
-      - echo "Installing dependencies..."
-      - go mod tidy
+      - go version
   build:
     commands:
-      - echo "Building the application..."
-      - go build -o gogs -buildvcs=false
-  post_build:
-    commands:
-      - echo "Build completed on `date`"
-
+      - go build -o gogs
 artifacts:
   files:
     - '**/*'
-  discard-paths: yes
+  name: $CODEBUILD_BUILD_NUMBER
