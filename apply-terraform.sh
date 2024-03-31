@@ -12,4 +12,4 @@ terraform init -backend-config="access_key=$AWS_ACCESS_KEY" -backend-config="sec
 terraform apply -auto-approve
 
 # destroy terraform
-#terraform destroy -auto-approve
+terraform destroy -auto-approve
