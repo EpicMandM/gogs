@@ -12,22 +12,8 @@ terraform {
 }
 
 
-resource "aws_db_instance" "gogs_db" {
-  allocated_storage   = 20
-  storage_type        = "gp2"
-  engine              = "postgres"
-  engine_version      = "15.4"
-  instance_class      = "db.t3.micro"
-  identifier          = "gogs"
-  username            = "gogs"
-  password            = "gogspass"
-  skip_final_snapshot = true
-}
-
-
-
 resource "aws_iam_role" "gogs-for-ec2" {
-  name = "gogs-for-ec2" # Rename to your desired role name with hyphens
+  name = "gogs-for-ec2"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -42,25 +28,25 @@ resource "aws_iam_role" "gogs-for-ec2" {
 }
 
 resource "aws_iam_policy_attachment" "administrator-access" {
-  name       = "administrator-access-attachment" # Give it a unique name
+  name       = "administrator-access-attachment"
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess-AWSElasticBeanstalk"
   roles      = [aws_iam_role.gogs-for-ec2.name]
 }
 
 resource "aws_iam_policy_attachment" "ec2-full-access" {
-  name       = "ec2-full-access-attachment" # Give it a unique name
+  name       = "ec2-full-access-attachment"
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
   roles      = [aws_iam_role.gogs-for-ec2.name]
 }
 
 resource "aws_iam_policy_attachment" "elasticbeanstalk-web-tier" {
-  name       = "elasticbeanstalk-web-tier-attachment" # Give it a unique name
+  name       = "elasticbeanstalk-web-tier-attachment"
   policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier"
   roles      = [aws_iam_role.gogs-for-ec2.name]
 }
 
 resource "aws_iam_instance_profile" "gogs-for-ec2" {
-  name = "gogs-for-ec2-instance-profile" # Rename to your desired instance profile name with hyphens
+  name = "gogs-for-ec2-instance-profile"
   role = aws_iam_role.gogs-for-ec2.name
 }
 
@@ -81,6 +67,54 @@ resource "aws_elastic_beanstalk_environment" "gogs" {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "IamInstanceProfile"
     value     = aws_iam_instance_profile.gogs-for-ec2.name
+    
+ setting {
+    namespace = "aws:rds:dbinstance"
+    name      = "DBAllocatedStorage"
+    value     = "10"
+  }
+
+  setting {
+    namespace = "aws:rds:dbinstance"
+    name      = "DBDeletionPolicy"
+    value     = "Delete"
+  }
+
+  setting {
+    namespace = "aws:rds:dbinstance"
+    name      = "HasCoupledDatabase"
+    value     = "true"
+  }
+
+  setting {
+    namespace = "aws:rds:dbinstance"
+    name      = "DBEngine"
+    value     = "postgres"
+  }
+
+  setting {
+    namespace = "aws:rds:dbinstance"
+    name      = "DBEngineVersion"
+    value     = "15.4"
+  }
+
+  setting {
+    namespace = "aws:rds:dbinstance"
+    name      = "DBInstanceClass"
+    value     = "db.t3.micro"
+  }
+
+  setting {
+    namespace = "aws:rds:dbinstance"
+    name      = "DBPassword"
+    value     = var.db_password
+  }
+
+  setting {
+    namespace = "aws:rds:dbinstance"
+    name      = "DBUser"
+    value     = var.db_username
+  }
   }
 
 
