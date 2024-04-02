@@ -67,8 +67,9 @@ resource "aws_elastic_beanstalk_environment" "gogs" {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "IamInstanceProfile"
     value     = aws_iam_instance_profile.gogs-for-ec2.name
-    
- setting {
+  }
+
+  setting {
     namespace = "aws:rds:dbinstance"
     name      = "DBAllocatedStorage"
     value     = "10"
@@ -115,9 +116,8 @@ resource "aws_elastic_beanstalk_environment" "gogs" {
     name      = "DBUser"
     value     = var.db_username
   }
-
-
 }
+
 
 
     
