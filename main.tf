@@ -11,6 +11,17 @@ terraform {
   }
 }
 
+resource "aws_db_instance" "gogs_db" {
+  allocated_storage   = 20
+  storage_type        = "gp2"
+  engine              = "postgres"
+  engine_version      = "15.4"
+  instance_class      = "db.t3.micro"
+  identifier          = "gogs"
+  username            = var.db_username
+  password            = var.db_password
+  skip_final_snapshot = true
+}
 
 resource "aws_iam_role" "gogs-for-ec2" {
   name = "gogs-for-ec2"
@@ -56,8 +67,6 @@ resource "aws_elastic_beanstalk_application" "gogs" {
 }
 
 
-
-
 resource "aws_elastic_beanstalk_environment" "gogs" {
   name                = "gogs"
   application         = aws_elastic_beanstalk_application.gogs.name
@@ -69,53 +78,6 @@ resource "aws_elastic_beanstalk_environment" "gogs" {
     value     = aws_iam_instance_profile.gogs-for-ec2.name
   }
 
-  setting {
-    namespace = "aws:rds:dbinstance"
-    name      = "DBAllocatedStorage"
-    value     = "10"
-  }
-
-  setting {
-    namespace = "aws:rds:dbinstance"
-    name      = "DBDeletionPolicy"
-    value     = "Delete"
-  }
-
-  setting {
-    namespace = "aws:rds:dbinstance"
-    name      = "HasCoupledDatabase"
-    value     = "true"
-  }
-
-  setting {
-    namespace = "aws:rds:dbinstance"
-    name      = "DBEngine"
-    value     = "postgres"
-  }
-
-  setting {
-    namespace = "aws:rds:dbinstance"
-    name      = "DBEngineVersion"
-    value     = "15.4"
-  }
-
-  setting {
-    namespace = "aws:rds:dbinstance"
-    name      = "DBInstanceClass"
-    value     = "db.t3.micro"
-  }
-
-  setting {
-    namespace = "aws:rds:dbinstance"
-    name      = "DBPassword"
-    value     = var.db_password
-  }
-
-  setting {
-    namespace = "aws:rds:dbinstance"
-    name      = "DBUser"
-    value     = var.db_username
-  }
 }
 
 
