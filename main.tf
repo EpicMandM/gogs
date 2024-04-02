@@ -115,7 +115,6 @@ resource "aws_elastic_beanstalk_environment" "gogs" {
     name      = "DBUser"
     value     = var.db_username
   }
-  }
 
 
 }
