@@ -1,0 +1,31 @@
+---
+- name: Load variables from dbvars.yml
+  include_vars:
+    file: ../../inventory/group_vars/dbvars.yml
+
+- name: "Create app database"
+  postgresql_db:
+    state: present
+    name: "{{ db_name }}"
+  become: true
+  become_user: postgres
+
+- name: "Create db user"
+  postgresql_user:
+    state: present
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+  become: true
+  become_user: postgres
+
+- name: "Grant db user access to app db"
+  postgresql_privs:
+    type: database
+    database: "{{ db_name }}"
+    roles: "{{ db_user }}"
+    grant_option: no
+    privs: all
+  become: true
+  become_user: postgres
+  notify: Restart PostgreSQL
+

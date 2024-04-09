@@ -1,0 +1,19 @@
+---
+
+- name: Install nfs-utils package
+  dnf:
+    name: nfs-utils
+    state: present
+
+- name: Install nfs4-acl-tools package
+  dnf:
+    name: nfs4-acl-tools
+    state: present
+
+- name: Mount NFS share
+  mount:
+    src: "{{ hostvars['nfs1'].ansible_host }}:/mnt/nfs_shares"
+    path: /mnt/nfs_share
+    fstype: nfs
+    opts: defaults
+    state: mounted

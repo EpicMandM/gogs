@@ -1,0 +1,9 @@
+---
+- name: Playbook for database
+  hosts: db
+  become: yes
+  roles:
+    - db
+
+  handlers:
+    - include: roles/db/handlers/handlers_db.yml

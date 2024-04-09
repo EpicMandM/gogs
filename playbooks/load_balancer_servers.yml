@@ -1,0 +1,9 @@
+---
+- name: Playbook for load balancer 
+  hosts: lb
+  become: yes
+  roles:
+    - lb
+
+  handlers:
+    - include: roles/lb/handlers/handlers_lb.yml
