@@ -3,7 +3,7 @@
   hosts: lb
   become: yes
   roles:
-    - lb
+    - ../roles/lb
 
   handlers:
     - include: roles/lb/handlers/handlers_lb.yml
