@@ -1,12 +1,4 @@
----
-<<<<<<< HEAD
 - import_playbook: ./playbooks/nfs_servers.yml
 - import_playbook: ./playbooks/db_servers.yml
 - import_playbook: ./playbooks/app_servers.yml
-- import_playbook: ./playbooks/load_balancer_servers.yml
-=======
-- import_playbook: nfs_servers.yml
-- import_playbook: db_servers.yml
-- import_playbook: app_servers.yml
-- import_playbook: load_balancer_servers.yml
->>>>>>> origin/main
+- import_playbook: ./playbooks/load_balancer_servers.yml 
