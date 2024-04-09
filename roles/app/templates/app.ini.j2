@@ -1,0 +1,55 @@
+BRAND_NAME = Gogs
+RUN_USER   = root
+RUN_MODE   = prod
+
+[database]
+TYPE     = postgres
+HOST     = {{ hostvars['db1'].ansible_host }}:5432
+NAME     = gogsapp
+SCHEMA   = public
+USER     = gogsapp
+PASSWORD = gogspass
+SSL_MODE = disable
+PATH     = /opt/gogs/data/gogs.db
+
+[repository]
+ROOT           = /mnt/nfs_share/gogs-repositories
+DEFAULT_BRANCH = master
+
+[server]
+DOMAIN           = localhost
+HTTP_PORT        = 3000
+EXTERNAL_URL     = http://localhost:3000/
+DISABLE_SSH      = false
+SSH_PORT         = 22
+START_SSH_SERVER = false
+OFFLINE_MODE     = false
+
+[mailer]
+ENABLED = false
+
+[auth]
+REQUIRE_EMAIL_CONFIRMATION  = false
+DISABLE_REGISTRATION        = false
+ENABLE_REGISTRATION_CAPTCHA = true
+REQUIRE_SIGNIN_VIEW         = false
+
+[user]
+ENABLE_EMAIL_NOTIFICATION = false
+
+[picture]
+DISABLE_GRAVATAR        = false
+ENABLE_FEDERATED_AVATAR = false
+
+[session]
+PROVIDER = file
+
+[log]
+MODE      = file
+LEVEL     = Info
+ROOT_PATH = /opt/gogs/log
+
+[security]
+INSTALL_LOCK = true
+SECRET_KEY   = 6X1DCjz1pzuRaYn
+

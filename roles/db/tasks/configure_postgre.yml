@@ -1,0 +1,23 @@
+---
+- name: Add port to firewall
+  firewalld:
+    port: 5432/tcp
+    zone: public
+    permanent: yes
+    state: enabled
+  notify: Reload firewalld
+
+- name: Update pg_hba.conf
+  lineinfile:
+    path: /var/lib/pgsql/data/pg_hba.conf
+    line: "host    all             all             0.0.0.0/0      md5"
+  notify: Restart PostgreSQL
+
+- name: Update postgresql.conf
+  lineinfile:
+    path: /var/lib/pgsql/data/postgresql.conf
+    regexp: "^#?listen_addresses"
+    line: "listen_addresses = '*'"
+  notify: Restart PostgreSQL
+
+

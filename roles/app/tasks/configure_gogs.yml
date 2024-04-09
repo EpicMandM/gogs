@@ -1,0 +1,23 @@
+---
+
+- name: Create directory
+  file:
+    path: /mnt/nfs_share/gogs-repositories
+    state: directory 
+
+- name: Create directory
+  file:
+    path: /mnt/nfs_share/data
+    state: directory
+
+- name: Create custom/conf directory
+  file:
+    path: /opt/gogs/custom/conf
+    state: directory
+    
+- name: Render app.ini template
+  template:
+    src: app.ini.j2
+    dest: /opt/gogs/custom/conf/app.ini
+
+      

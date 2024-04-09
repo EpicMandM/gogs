@@ -1,0 +1,14 @@
+---
+- name: Install NGINX
+  dnf:
+    name: nginx
+    state: present
+
+- name: Start NGINX service
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes
+
+
+

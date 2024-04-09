@@ -1,0 +1,34 @@
+---
+   
+- name: Create service file
+  template:
+    src: gogs.service.j2
+    dest: /etc/systemd/system/gogs.service
+    
+- name: Disable SELinux enforcement
+  command: setenforce 0
+  changed_when: false
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: Start Gogs service
+  systemd:
+    name: gogs
+    state: started
+    enabled: yes
+
+- name: Open port 3000
+  firewalld:
+    port: 3000/tcp
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+- name: Set httpd_can_network_connect SELinux boolean
+  become: true
+  seboolean:
+    name: httpd_can_network_connect
+    persistent: yes
+    state: yes
