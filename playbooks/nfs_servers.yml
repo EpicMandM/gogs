@@ -3,4 +3,4 @@
   hosts: nfs
   become: yes
   roles:
-    - nfs
+    - ../roles/nfs
