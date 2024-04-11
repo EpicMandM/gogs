@@ -1,4 +1,12 @@
 ---
+- name: Allow HTTP traffic
+  firewalld:
+    service: http
+    zone: public
+    permanent: yes
+    state: enabled
+  become: true
+
 - name: Copy NGINX configuration
   template:
     src: nginx.conf.j2
