@@ -4,14 +4,14 @@
     file: ../../inventory/group_vars/dbvars.yml
 
 - name: "Create app database"
-  postgresql_db:
+  community.postgresql.postgresql_db:
     state: present
     name: "{{ db_name }}"
   become: true
   become_user: postgres
 
 - name: "Create db user"
-  postgresql_user:
+  community.postgresql.postgresql_user:
     state: present
     name: "{{ db_user }}"
     password: "{{ db_password }}"
@@ -19,7 +19,7 @@
   become_user: postgres
 
 - name: "Grant db user access to app db"
-  postgresql_privs:
+  community.postgresql.postgresql_privs:
     type: database
     database: "{{ db_name }}"
     roles: "{{ db_user }}"

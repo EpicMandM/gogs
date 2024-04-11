@@ -3,4 +3,4 @@
   hosts: app
   become: yes
   roles:
-    - app
+    - ../roles/app
