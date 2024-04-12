@@ -1,12 +1,4 @@
 ---
-- name: Allow HTTP traffic
-  firewalld:
-    service: http
-    zone: public
-    permanent: yes
-    state: enabled
-  become: true
-
 - name: Open port 80/tcp
   firewalld:
     port: 80/tcp
@@ -19,7 +11,7 @@
   template:
     src: nginx.conf.j2
     dest: /etc/nginx/nginx.conf
-    owner: root
+    owner: root%%ee
     group: root
     mode: 0644
   notify: Reload NGINX
