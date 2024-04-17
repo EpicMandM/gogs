@@ -222,33 +222,40 @@ data "aws_vpc" "default" {
   default = true
 }
 
-data "aws_subnet_ids" "default" {
-  vpc_id = data.aws_vpc.default.id
-}
-
-data "aws_subnet" "default" {
-  for_each = data.aws_subnet_ids.default.ids
-
-  id = each.value
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
 }
 
 resource "aws_ec2_transit_gateway_vpc_attachment" "default_vpc_attachment" {
   transit_gateway_id = aws_ec2_transit_gateway.example_tgw.id
   vpc_id             = data.aws_vpc.default.id
-  subnet_ids         = data.aws_subnet_ids.default.ids
+  subnet_ids         = data.aws_subnets.default.ids
 
   tags = {
     Name = "Default VPC Attachment"
   }
 }
 
+
 data "aws_route_tables" "default" {
-  vpc_id = data.aws_vpc.default.id
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
 }
 
 resource "aws_route" "default_to_ec2" {
-  for_each               = data.aws_route_tables.default.ids
+  for_each               = toset(data.aws_route_tables.default.ids)
   route_table_id         = each.value
   destination_cidr_block = aws_vpc.gogs_vpc.cidr_block
+  transit_gateway_id     = aws_ec2_transit_gateway.example_tgw.id
+}
+
+resource "aws_route" "ec2_to_default" {
+  route_table_id         = aws_route_table.gogs_public_route_table.id
+  destination_cidr_block = data.aws_vpc.default.cidr_block
   transit_gateway_id     = aws_ec2_transit_gateway.example_tgw.id
 }
