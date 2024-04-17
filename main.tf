@@ -252,10 +252,12 @@ resource "aws_route" "default_to_ec2" {
   route_table_id         = each.value
   destination_cidr_block = aws_vpc.gogs_vpc.cidr_block
   transit_gateway_id     = aws_ec2_transit_gateway.example_tgw.id
+  depends_on             = [aws_ec2_transit_gateway.example_tgw]
 }
 
 resource "aws_route" "ec2_to_default" {
   route_table_id         = aws_route_table.gogs_public_route_table.id
   destination_cidr_block = data.aws_vpc.default.cidr_block
   transit_gateway_id     = aws_ec2_transit_gateway.example_tgw.id
+  depends_on             = [aws_ec2_transit_gateway.example_tgw]
 }
