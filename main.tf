@@ -2,26 +2,14 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# terraform {
-#   backend "s3" {
-#     bucket  = "gogs-terraform-state"
-#     key     = "build/terraform.tfstate"
-#     region  = "us-east-1"
-#     profile = "terraform"
-#   }
-# }
-
-# resource "aws_db_instance" "gogs_db" {
-#   allocated_storage   = 20
-#   storage_type        = "gp2"
-#   engine              = "postgres"
-#   engine_version      = "15.4"
-#   instance_class      = "db.t3.micro"
-#   identifier          = "gogs"
-#   username            = var.db_username
-#   password            = var.db_password
-#   skip_final_snapshot = true
-# }
+terraform {
+  backend "s3" {
+    bucket  = "gogs-terraform-state"
+    key     = "build/terraform.tfstate"
+    region  = "us-east-1"
+    profile = "terraform"
+  }
+}
 
 resource "aws_iam_role" "gogs-for-ec2" {
   name = "gogs-for-ec2"
