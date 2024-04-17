@@ -239,6 +239,17 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "default_vpc_attachment" {
   }
 }
 
+resource "aws_ec2_transit_gateway_vpc_attachment" "custom_vpc_attachment" {
+  transit_gateway_id = aws_ec2_transit_gateway.example_tgw.id
+  vpc_id             = aws_vpc.gogs_vpc.id
+  subnet_ids         = [aws_subnet.gogs_public_subnet.id, aws_subnet.gogs_private_subnet.id]
+
+  tags = {
+    Name = "Custom VPC Attachment"
+  }
+}
+
+
 
 data "aws_route_tables" "default" {
   filter {
@@ -247,17 +258,19 @@ data "aws_route_tables" "default" {
   }
 }
 
+# Route from default VPC to custom VPC
 resource "aws_route" "default_to_ec2" {
   for_each               = toset(data.aws_route_tables.default.ids)
   route_table_id         = each.value
   destination_cidr_block = aws_vpc.gogs_vpc.cidr_block
   transit_gateway_id     = aws_ec2_transit_gateway.example_tgw.id
-  depends_on             = [aws_ec2_transit_gateway.example_tgw]
+  depends_on             = [aws_ec2_transit_gateway_vpc_attachment.default_vpc_attachment, aws_ec2_transit_gateway_vpc_attachment.custom_vpc_attachment]
 }
 
+# Route from custom VPC to default VPC
 resource "aws_route" "ec2_to_default" {
   route_table_id         = aws_route_table.gogs_public_route_table.id
   destination_cidr_block = data.aws_vpc.default.cidr_block
   transit_gateway_id     = aws_ec2_transit_gateway.example_tgw.id
-  depends_on             = [aws_ec2_transit_gateway.example_tgw]
+  depends_on             = [aws_ec2_transit_gateway_vpc_attachment.default_vpc_attachment, aws_ec2_transit_gateway_vpc_attachment.custom_vpc_attachment]
 }
