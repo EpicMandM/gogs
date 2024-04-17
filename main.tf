@@ -91,7 +91,7 @@ resource "aws_security_group" "lb_security_group" {
   description = "Security group for EC2 Load Balancer"
   vpc_id      = aws_vpc.gogs_vpc.id
 
-    ingress {
+  ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -207,4 +207,48 @@ resource "null_resource" "dev-hosts" {
   provisioner "local-exec" {
     command = "echo '${data.template_file.dev_hosts.rendered}' > ${path.module}/inventory/hosts.cfg"
   }
+}
+
+resource "aws_ec2_transit_gateway" "example_tgw" {
+  description = "Transit Gateway for CodeBuild and EC2 instances communication"
+
+  tags = {
+    Name = "MyTransitGateway"
+  }
+}
+
+
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnet_ids" "default" {
+  vpc_id = data.aws_vpc.default.id
+}
+
+data "aws_subnet" "default" {
+  for_each = data.aws_subnet_ids.default.ids
+
+  id = each.value
+}
+
+resource "aws_ec2_transit_gateway_vpc_attachment" "default_vpc_attachment" {
+  transit_gateway_id = aws_ec2_transit_gateway.example_tgw.id
+  vpc_id             = data.aws_vpc.default.id
+  subnet_ids         = data.aws_subnet_ids.default.ids
+
+  tags = {
+    Name = "Default VPC Attachment"
+  }
+}
+
+data "aws_route_tables" "default" {
+  vpc_id = data.aws_vpc.default.id
+}
+
+resource "aws_route" "default_to_ec2" {
+  for_each               = data.aws_route_tables.default.ids
+  route_table_id         = each.value
+  destination_cidr_block = aws_vpc.gogs_vpc.cidr_block
+  transit_gateway_id     = aws_ec2_transit_gateway.example_tgw.id
 }
