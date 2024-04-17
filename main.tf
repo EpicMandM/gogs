@@ -2,26 +2,26 @@ provider "aws" {
   region = "us-east-1"
 }
 
-terraform {
-  backend "s3" {
-    bucket  = "gogs-terraform-state"
-    key     = "build/terraform.tfstate"
-    region  = "us-east-1"
-    profile = "terraform"
-  }
-}
+# terraform {
+#   backend "s3" {
+#     bucket  = "gogs-terraform-state"
+#     key     = "build/terraform.tfstate"
+#     region  = "us-east-1"
+#     profile = "terraform"
+#   }
+# }
 
-resource "aws_db_instance" "gogs_db" {
-  allocated_storage   = 20
-  storage_type        = "gp2"
-  engine              = "postgres"
-  engine_version      = "15.4"
-  instance_class      = "db.t3.micro"
-  identifier          = "gogs"
-  username            = var.db_username
-  password            = var.db_password
-  skip_final_snapshot = true
-}
+# resource "aws_db_instance" "gogs_db" {
+#   allocated_storage   = 20
+#   storage_type        = "gp2"
+#   engine              = "postgres"
+#   engine_version      = "15.4"
+#   instance_class      = "db.t3.micro"
+#   identifier          = "gogs"
+#   username            = var.db_username
+#   password            = var.db_password
+#   skip_final_snapshot = true
+# }
 
 resource "aws_iam_role" "gogs-for-ec2" {
   name = "gogs-for-ec2"
@@ -37,6 +37,8 @@ resource "aws_iam_role" "gogs-for-ec2" {
     }]
   })
 }
+
+
 
 resource "aws_iam_policy_attachment" "administrator-access" {
   name       = "administrator-access-attachment"
@@ -62,14 +64,14 @@ resource "aws_iam_instance_profile" "gogs-for-ec2" {
 }
 
 resource "aws_vpc" "gogs_vpc" {
-  cidr_block = "10.0.0.0/16"
-  enable_dns_support = true
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_support   = true
   enable_dns_hostnames = true
 }
 
 resource "aws_subnet" "gogs_public_subnet" {
-  vpc_id     = aws_vpc.gogs_vpc.id
-  cidr_block = "10.0.1.0/24"
+  vpc_id                  = aws_vpc.gogs_vpc.id
+  cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
 }
 
@@ -101,6 +103,12 @@ resource "aws_security_group" "lb_security_group" {
   description = "Security group for EC2 Load Balancer"
   vpc_id      = aws_vpc.gogs_vpc.id
 
+    ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   ingress {
     from_port   = 80
     to_port     = 80
@@ -127,41 +135,88 @@ resource "aws_security_group" "lb_security_group" {
   }
 }
 
-resource "aws_instance" "lb1" {
-  ami                    = "ami-051f8a213df8bc089"  # Replace this with the actual AMI ID
-  instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.gogs_public_subnet.id
-  key_name               = "your-key-pair"  # Replace this with your key pair for SSH access
-  associate_public_ip_address = true
-  security_groups        = [aws_security_group.lb_security_group.id]
+resource "aws_security_group" "ec2_security_group" {
+  name        = "ec2-security-group"
+  description = "Security group for EC2 instances"
+  vpc_id      = aws_vpc.gogs_vpc.id
 
-  iam_instance_profile   = aws_iam_instance_profile.gogs-for-ec2.name
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "EC2 Security Group"
+  }
+}
+
+
+resource "aws_instance" "lb1" {
+  ami                         = "ami-051f8a213df8bc089"
+  instance_type               = "t2.micro"
+  subnet_id                   = aws_subnet.gogs_public_subnet.id
+  key_name                    = "app-key-pair"
+  associate_public_ip_address = true
+  security_groups             = [aws_security_group.lb_security_group.id]
+  iam_instance_profile        = aws_iam_instance_profile.gogs-for-ec2.name
 
 }
 
 resource "aws_instance" "nfs1" {
-  ami           = "ami-051f8a213df8bc089"
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.gogs_private_subnet.id
-  iam_instance_profile = aws_iam_instance_profile.gogs-for-ec2.name
+  ami                    = "ami-051f8a213df8bc089"
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.gogs_private_subnet.id
+  key_name               = "app-key-pair"
+  iam_instance_profile   = aws_iam_instance_profile.gogs-for-ec2.name
+  vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
 }
 
 resource "aws_instance" "db1" {
-  ami           = "ami-051f8a213df8bc089"
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.gogs_private_subnet.id
-  iam_instance_profile = aws_iam_instance_profile.gogs-for-ec2.name
+  ami                    = "ami-051f8a213df8bc089"
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.gogs_private_subnet.id
+  key_name               = "app-key-pair"
+  iam_instance_profile   = aws_iam_instance_profile.gogs-for-ec2.name
+  vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
 }
 
 resource "aws_instance" "appgogs" {
-  count         = 2
-  ami           = "ami-051f8a213df8bc089"
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.gogs_private_subnet.id
-  iam_instance_profile = aws_iam_instance_profile.gogs-for-ec2.name
+  count                  = 2
+  ami                    = "ami-051f8a213df8bc089"
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.gogs_private_subnet.id
+  key_name               = "app-key-pair"
+  iam_instance_profile   = aws_iam_instance_profile.gogs-for-ec2.name
+  vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
 }
 
-# Output for Load Balancer public IP
-output "lb_public_ip" {
-  value = aws_instance.lb1.public_ip
+data "template_file" "dev_hosts" {
+  template = file("${path.module}/inventory/templates/hosts.cfg.tpl")
+
+  vars = {
+    nfs1_ip      = aws_instance.nfs1.private_ip
+    db1_ip       = aws_instance.db1.private_ip
+    lb1_ip       = aws_instance.lb1.public_ip
+    appgogs_1_ip = aws_instance.appgogs[0].private_ip
+    appgogs_2_ip = aws_instance.appgogs[1].private_ip
+  }
+}
+
+resource "null_resource" "dev-hosts" {
+  triggers = {
+    template_rendered = data.template_file.dev_hosts.rendered
+  }
+
+  provisioner "local-exec" {
+    command = "echo '${data.template_file.dev_hosts.rendered}' > ${path.module}/inventory/hosts.cfg"
+  }
 }

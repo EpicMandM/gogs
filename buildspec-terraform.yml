@@ -7,9 +7,10 @@ phases:
 
   pre_build:
     commands:
-      - chmod +x install-terraform.sh configure-named-profile.sh apply-terraform.sh
+      - chmod +x install-terraform.sh configure-named-profile.sh apply-deployment.sh install-ansible.sh
       - ./install-terraform.sh
+      - ./install-ansible.sh
       - ./configure-named-profile.sh
   build:
     commands:
-      - ./apply-terraform.sh
+      - ./apply-deployment.sh
