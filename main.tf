@@ -234,6 +234,10 @@ resource "aws_route" "gogs_to_custom" {
   vpc_peering_connection_id = aws_vpc_peering_connection.peering.id
 }
 
+data "aws_route_table" "custom_public_route_table" {
+  vpc_id = data.aws_vpc.custom_vpc.id
+}
+
 # Route from custom_vpc to gogs_vpc
 resource "aws_route" "custom_to_gogs" {
   route_table_id            = data.aws_route_table.custom_public_route_table.id
