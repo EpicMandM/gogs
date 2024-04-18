@@ -209,22 +209,14 @@ resource "null_resource" "dev-hosts" {
   }
 }
 
+# Data source to fetch the existing custom VPC by its tag
 data "aws_vpc" "custom_vpc" {
   tags = {
     Name = "VPC"
   }
 }
 
-resource "aws_vpc_peering_connection" "peering" {
-  peer_vpc_id = aws_vpc.custom_vpc.id
-  vpc_id      = aws_vpc.gogs_vpc.id
-  auto_accept = true
-
-  tags = {
-    Name = "VPC Peering between gogs_vpc and custom_vpc"
-  }
-}
-
+# Define the VPC peering connection between gogs_vpc and custom_vpc
 resource "aws_vpc_peering_connection" "peering" {
   peer_vpc_id = data.aws_vpc.custom_vpc.id
   vpc_id      = aws_vpc.gogs_vpc.id
