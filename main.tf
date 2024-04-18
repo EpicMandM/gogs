@@ -236,6 +236,9 @@ resource "aws_route" "gogs_to_custom" {
 
 data "aws_route_table" "custom_public_route_table" {
   vpc_id = data.aws_vpc.custom_vpc.id
+  tags = {
+    "aws:cloudformation:logical-id" = "PrivateRouteTable"  # Make sure this tag exists and is unique to one route table.
+  }
 }
 
 # Route from custom_vpc to gogs_vpc
