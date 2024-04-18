@@ -209,68 +209,35 @@ resource "null_resource" "dev-hosts" {
   }
 }
 
-resource "aws_ec2_transit_gateway" "example_tgw" {
-  description = "Transit Gateway for CodeBuild and EC2 instances communication"
+
+# Assuming aws_vpc.gogs_vpc and other resources are already defined as per your existing configuration.
+
+# Peering connection between gogs_vpc and the default VPC
+resource "aws_vpc_peering_connection" "peering" {
+  peer_vpc_id = data.aws_vpc.default.id
+  vpc_id      = aws_vpc.gogs_vpc.id
+  auto_accept = true
 
   tags = {
-    Name = "MyTransitGateway"
+    Name = "VPC Peering between gogs_vpc and default"
   }
 }
 
-
-data "aws_vpc" "default" {
-  default = true
-}
-
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-}
-
-resource "aws_ec2_transit_gateway_vpc_attachment" "default_vpc_attachment" {
-  transit_gateway_id = aws_ec2_transit_gateway.example_tgw.id
-  vpc_id             = data.aws_vpc.default.id
-  subnet_ids         = data.aws_subnets.default.ids
-
-  tags = {
-    Name = "Default VPC Attachment"
-  }
-}
-
-resource "aws_ec2_transit_gateway_vpc_attachment" "custom_vpc_attachment" {
-  transit_gateway_id = aws_ec2_transit_gateway.example_tgw.id
-  vpc_id             = aws_vpc.gogs_vpc.id
-  subnet_ids         = [aws_subnet.gogs_public_subnet.id, aws_subnet.gogs_private_subnet.id]
-
-  tags = {
-    Name = "Custom VPC Attachment"
-  }
-}
-
-
-
-data "aws_route_tables" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-}
-
-# Route from default VPC to custom VPC
-resource "aws_route" "default_to_ec2" {
-  for_each               = toset(data.aws_route_tables.default.ids)
-  route_table_id         = each.value
-  destination_cidr_block = aws_vpc.gogs_vpc.cidr_block
-  transit_gateway_id     = aws_ec2_transit_gateway.example_tgw.id
-  depends_on             = [aws_ec2_transit_gateway_vpc_attachment.default_vpc_attachment, aws_ec2_transit_gateway_vpc_attachment.custom_vpc_attachment]
-}
-
-# Route from custom VPC to default VPC
-resource "aws_route" "ec2_to_default" {
+# Routes in gogs_vpc for traffic to default VPC via peering connection
+resource "aws_route" "gogs_to_default" {
   route_table_id         = aws_route_table.gogs_public_route_table.id
   destination_cidr_block = data.aws_vpc.default.cidr_block
-  transit_gateway_id     = aws_ec2_transit_gateway.example_tgw.id
-  depends_on             = [aws_ec2_transit_gateway_vpc_attachment.default_vpc_attachment, aws_ec2_transit_gateway_vpc_attachment.custom_vpc_attachment]
+  vpc_peering_connection_id = aws_vpc_peering_connection.peering.id
+}
+
+# Retrieve the default route table ID for the default VPC
+data "aws_route_table" "default" {
+  vpc_id = data.aws_vpc.default.id
+}
+
+# Routes in default VPC for traffic to gogs_vpc via peering connection
+resource "aws_route" "default_to_gogs" {
+  route_table_id         = data.aws_route_table.default.id
+  destination_cidr_block = aws_vpc.gogs_vpc.cidr_block
+  vpc_peering_connection_id = aws_vpc_peering_connection.peering.id
 }
