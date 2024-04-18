@@ -209,13 +209,9 @@ resource "null_resource" "dev-hosts" {
   }
 }
 
-resource "aws_vpc" "custom_vpc" {
-  cidr_block = "10.192.0.0/16"
-  enable_dns_support   = true
-  enable_dns_hostnames = true
-
+data "aws_vpc" "custom_vpc" {
   tags = {
-    Name = "Custom VPC"
+    Name = "VPC"
   }
 }
 
@@ -229,25 +225,26 @@ resource "aws_vpc_peering_connection" "peering" {
   }
 }
 
-
-# Assuming aws_route_table.gogs_public_route_table represents the route table associated with the gogs_vpc
-resource "aws_route" "gogs_to_custom" {
-  route_table_id            = aws_route_table.gogs_public_route_table.id
-  destination_cidr_block    = aws_vpc.custom_vpc.cidr_block
-  vpc_peering_connection_id = aws_vpc_peering_connection.peering.id
-}
-
-# Assuming aws_route_table.custom_public_route_table represents the route table associated with the custom_vpc
-resource "aws_route" "custom_to_gogs" {
-  route_table_id            = aws_route_table.custom_public_route_table.id
-  destination_cidr_block    = aws_vpc.gogs_vpc.cidr_block
-  vpc_peering_connection_id = aws_vpc_peering_connection.peering.id
-}
-
-resource "aws_route_table" "custom_public_route_table" {
-  vpc_id = aws_vpc.custom_vpc.id
+resource "aws_vpc_peering_connection" "peering" {
+  peer_vpc_id = data.aws_vpc.custom_vpc.id
+  vpc_id      = aws_vpc.gogs_vpc.id
+  auto_accept = true
 
   tags = {
-    Name = "Custom VPC Public Route Table"
+    Name = "VPC Peering between gogs_vpc and custom_vpc"
   }
+}
+
+# Route from gogs_vpc to custom_vpc
+resource "aws_route" "gogs_to_custom" {
+  route_table_id            = aws_route_table.gogs_public_route_table.id
+  destination_cidr_block    = data.aws_vpc.custom_vpc.cidr_block
+  vpc_peering_connection_id = aws_vpc_peering_connection.peering.id
+}
+
+# Route from custom_vpc to gogs_vpc
+resource "aws_route" "custom_to_gogs" {
+  route_table_id            = data.aws_route_table.custom_public_route_table.id
+  destination_cidr_block    = aws_vpc.gogs_vpc.cidr_block
+  vpc_peering_connection_id = aws_vpc_peering_connection.peering.id
 }
