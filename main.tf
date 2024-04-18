@@ -209,38 +209,45 @@ resource "null_resource" "dev-hosts" {
   }
 }
 
-# Data source to fetch the default VPC
-data "aws_vpc" "default" {
-  default = true
+resource "aws_vpc" "custom_vpc" {
+  cidr_block = "10.192.0.0/16"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+
+  tags = {
+    Name = "Custom VPC"
+  }
 }
 
-# Now you can reference data.aws_vpc.default.id in your resources
-
 resource "aws_vpc_peering_connection" "peering" {
-  peer_vpc_id = data.aws_vpc.default.id
+  peer_vpc_id = aws_vpc.custom_vpc.id
   vpc_id      = aws_vpc.gogs_vpc.id
   auto_accept = true
 
   tags = {
-    Name = "VPC Peering between gogs_vpc and default"
+    Name = "VPC Peering between gogs_vpc and custom_vpc"
   }
 }
 
-# Routes in gogs_vpc for traffic to default VPC via peering connection
-resource "aws_route" "gogs_to_default" {
+
+# Assuming aws_route_table.gogs_public_route_table represents the route table associated with the gogs_vpc
+resource "aws_route" "gogs_to_custom" {
   route_table_id            = aws_route_table.gogs_public_route_table.id
-  destination_cidr_block    = data.aws_vpc.default.cidr_block
+  destination_cidr_block    = aws_vpc.custom_vpc.cidr_block
   vpc_peering_connection_id = aws_vpc_peering_connection.peering.id
 }
 
-# Retrieve the default route table ID for the default VPC
-data "aws_route_table" "default" {
-  vpc_id = data.aws_vpc.default.id
-}
-
-# Routes in default VPC for traffic to gogs_vpc via peering connection
-resource "aws_route" "default_to_gogs" {
-  route_table_id            = data.aws_route_table.default.id
+# Assuming aws_route_table.custom_public_route_table represents the route table associated with the custom_vpc
+resource "aws_route" "custom_to_gogs" {
+  route_table_id            = aws_route_table.custom_public_route_table.id
   destination_cidr_block    = aws_vpc.gogs_vpc.cidr_block
   vpc_peering_connection_id = aws_vpc_peering_connection.peering.id
+}
+
+resource "aws_route_table" "custom_public_route_table" {
+  vpc_id = aws_vpc.custom_vpc.id
+
+  tags = {
+    Name = "Custom VPC Public Route Table"
+  }
 }
