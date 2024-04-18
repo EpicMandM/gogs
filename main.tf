@@ -209,10 +209,13 @@ resource "null_resource" "dev-hosts" {
   }
 }
 
+# Data source to fetch the default VPC
+data "aws_vpc" "default" {
+  default = true
+}
 
-# Assuming aws_vpc.gogs_vpc and other resources are already defined as per your existing configuration.
+# Now you can reference data.aws_vpc.default.id in your resources
 
-# Peering connection between gogs_vpc and the default VPC
 resource "aws_vpc_peering_connection" "peering" {
   peer_vpc_id = data.aws_vpc.default.id
   vpc_id      = aws_vpc.gogs_vpc.id
@@ -225,8 +228,8 @@ resource "aws_vpc_peering_connection" "peering" {
 
 # Routes in gogs_vpc for traffic to default VPC via peering connection
 resource "aws_route" "gogs_to_default" {
-  route_table_id         = aws_route_table.gogs_public_route_table.id
-  destination_cidr_block = data.aws_vpc.default.cidr_block
+  route_table_id            = aws_route_table.gogs_public_route_table.id
+  destination_cidr_block    = data.aws_vpc.default.cidr_block
   vpc_peering_connection_id = aws_vpc_peering_connection.peering.id
 }
 
@@ -237,7 +240,7 @@ data "aws_route_table" "default" {
 
 # Routes in default VPC for traffic to gogs_vpc via peering connection
 resource "aws_route" "default_to_gogs" {
-  route_table_id         = data.aws_route_table.default.id
-  destination_cidr_block = aws_vpc.gogs_vpc.cidr_block
+  route_table_id            = data.aws_route_table.default.id
+  destination_cidr_block    = aws_vpc.gogs_vpc.cidr_block
   vpc_peering_connection_id = aws_vpc_peering_connection.peering.id
 }
