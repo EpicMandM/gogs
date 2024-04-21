@@ -15,3 +15,4 @@ phases:
     commands:
       - ./apply-deployment.sh
       - ansible-playbook -i ./inventory/hosts.cfg site.yml
+c

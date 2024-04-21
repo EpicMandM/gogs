@@ -26,13 +26,49 @@ resource "aws_iam_role" "gogs-for-ec2" {
   })
 }
 
+resource "aws_iam_role" "ec2_secrets_role" {
+  name = "EC2SecretsManagerRole"
 
-
-resource "aws_iam_policy_attachment" "administrator-access" {
-  name       = "administrator-access-attachment"
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess-AWSElasticBeanstalk"
-  roles      = [aws_iam_role.gogs-for-ec2.name]
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect    = "Allow",
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        },
+        Action    = "sts:AssumeRole"
+      }
+    ]
+  })
 }
+
+resource "aws_iam_role_policy_attachment" "secrets_policy_attach" {
+  role       = aws_iam_role.ec2_secrets_role.name
+  policy_arn = aws_iam_policy.secretsmanager_policy.arn
+}
+
+
+resource "aws_iam_policy" "secretsmanager_policy" {
+  name        = "SecretsManagerAccessPolicy"
+  description = "Policy to access specific secrets in Secrets Manager"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect    = "Allow",
+        Action    = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ],
+        Resource  = "arn:aws:secretsmanager:us-east-1:577317039358:secret:app-key-pair-OtDRMy"
+      }
+    ]
+  })
+}
+
+
 
 resource "aws_iam_policy_attachment" "ec2-full-access" {
   name       = "ec2-full-access-attachment"
@@ -40,15 +76,14 @@ resource "aws_iam_policy_attachment" "ec2-full-access" {
   roles      = [aws_iam_role.gogs-for-ec2.name]
 }
 
-resource "aws_iam_policy_attachment" "elasticbeanstalk-web-tier" {
-  name       = "elasticbeanstalk-web-tier-attachment"
-  policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier"
-  roles      = [aws_iam_role.gogs-for-ec2.name]
-}
-
 resource "aws_iam_instance_profile" "gogs-for-ec2" {
   name = "gogs-for-ec2-instance-profile"
   role = aws_iam_role.gogs-for-ec2.name
+}
+
+resource "aws_iam_instance_profile" "ec2_secrets_profile" {
+  name = "EC2SecretsInstanceProfile"
+  role = aws_iam_role.ec2_secrets_role.name
 }
 
 resource "aws_vpc" "gogs_vpc" {
@@ -132,7 +167,7 @@ resource "aws_security_group" "ec2_security_group" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -157,6 +192,10 @@ resource "aws_instance" "lb1" {
   security_groups             = [aws_security_group.lb_security_group.id]
   iam_instance_profile        = aws_iam_instance_profile.gogs-for-ec2.name
 
+  tags = {
+    Role = "lb"
+    Name = "lb1"
+  }
 }
 
 resource "aws_instance" "nfs1" {
@@ -166,6 +205,11 @@ resource "aws_instance" "nfs1" {
   key_name               = "app-key-pair"
   iam_instance_profile   = aws_iam_instance_profile.gogs-for-ec2.name
   vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
+
+  tags = {
+    Role = "nfs"
+    Name = "nfs1"
+  }
 }
 
 resource "aws_instance" "db1" {
@@ -175,6 +219,11 @@ resource "aws_instance" "db1" {
   key_name               = "app-key-pair"
   iam_instance_profile   = aws_iam_instance_profile.gogs-for-ec2.name
   vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
+
+  tags = {
+    Role = "db"
+    Name = "db1"
+  }
 }
 
 resource "aws_instance" "appgogs" {
@@ -185,65 +234,19 @@ resource "aws_instance" "appgogs" {
   key_name               = "app-key-pair"
   iam_instance_profile   = aws_iam_instance_profile.gogs-for-ec2.name
   vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
-}
-
-data "template_file" "dev_hosts" {
-  template = file("${path.module}/inventory/templates/hosts.cfg.tpl")
-
-  vars = {
-    nfs1_ip      = aws_instance.nfs1.private_ip
-    db1_ip       = aws_instance.db1.private_ip
-    lb1_ip       = aws_instance.lb1.public_ip
-    appgogs_1_ip = aws_instance.appgogs[0].private_ip
-    appgogs_2_ip = aws_instance.appgogs[1].private_ip
-  }
-}
-
-resource "null_resource" "dev-hosts" {
-  triggers = {
-    template_rendered = data.template_file.dev_hosts.rendered
-  }
-
-  provisioner "local-exec" {
-    command = "echo '${data.template_file.dev_hosts.rendered}' > ${path.module}/inventory/hosts.cfg"
-  }
-}
-
-# Data source to fetch the existing custom VPC by its tag
-data "aws_vpc" "custom_vpc" {
-  tags = {
-    Name = "VPC"
-  }
-}
-
-# Define the VPC peering connection between gogs_vpc and custom_vpc
-resource "aws_vpc_peering_connection" "peering" {
-  peer_vpc_id = data.aws_vpc.custom_vpc.id
-  vpc_id      = aws_vpc.gogs_vpc.id
-  auto_accept = true
 
   tags = {
-    Name = "VPC Peering between gogs_vpc and custom_vpc"
+    Role = "app"
+    Name = "appgogs-${count.index + 1}"
   }
 }
 
-# Route from gogs_vpc to custom_vpc
-resource "aws_route" "gogs_to_custom" {
-  route_table_id            = aws_route_table.gogs_public_route_table.id
-  destination_cidr_block    = data.aws_vpc.custom_vpc.cidr_block
-  vpc_peering_connection_id = aws_vpc_peering_connection.peering.id
-}
-
-data "aws_route_table" "custom_public_route_table" {
-  vpc_id = data.aws_vpc.custom_vpc.id
-  tags = {
-    "aws:cloudformation:logical-id" = "PrivateRouteTable"  # Make sure this tag exists and is unique to one route table.
-  }
-}
-
-# Route from custom_vpc to gogs_vpc
-resource "aws_route" "custom_to_gogs" {
-  route_table_id            = data.aws_route_table.custom_public_route_table.id
-  destination_cidr_block    = aws_vpc.gogs_vpc.cidr_block
-  vpc_peering_connection_id = aws_vpc_peering_connection.peering.id
+resource "aws_instance" "ansible-control-node" {
+  ami                         = "ami-051f8a213df8bc089"
+  instance_type               = "t2.micro"
+  subnet_id                   = aws_subnet.gogs_public_subnet.id
+  key_name                    = "app-key-pair"
+  associate_public_ip_address = true
+  security_groups             = [aws_security_group.lb_security_group.id]
+  iam_instance_profile        = aws_iam_instance_profile.ec2_secrets_profile.name
 }
