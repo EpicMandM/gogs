@@ -3,7 +3,7 @@ regions:
   - us-east-1
 
 keyed_groups:
-  - prefix: role
+  - prefix: '' 
     key: tags.Role
 
 hostnames:

@@ -15,33 +15,6 @@
   command:
     cmd: sudo exportfs -arv
 
-- name: Add NFS service to firewall
-  become: true
-  ansible.posix.firewalld:
-    service: nfs
-    permanent: true
-    state: enabled
-
-- name: Add RPC Bind service to firewall
-  become: true
-  firewalld:
-    service: rpc-bind
-    permanent: true
-    state: enabled
-
-- name: Add Mountd service to firewall
-  become: true
-  firewalld:
-    service: mountd
-    permanent: true
-    state: enabled
-
-- name: Reload firewall
-  become: true
-  systemd:
-    name: firewalld
-    state: restarted
-
 - name: Configure Selinux
   become: true
   command: sudo setsebool -P nfs_export_all_rw 1
