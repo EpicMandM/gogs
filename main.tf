@@ -43,10 +43,6 @@ resource "aws_iam_role" "ec2_secrets_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "secrets_policy_attach" {
-  role       = aws_iam_role.ec2_secrets_role.name
-  policy_arn = aws_iam_policy.secretsmanager_policy.arn
-}
 
 
 resource "aws_iam_policy" "secretsmanager_policy" {
@@ -68,6 +64,33 @@ resource "aws_iam_policy" "secretsmanager_policy" {
   })
 }
 
+resource "aws_iam_policy" "ec2_full_access_policy" {
+  name        = "EC2FullAccessPolicy"
+  description = "Policy granting full access to EC2 instances"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = "ec2:*",
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+
+resource "aws_iam_role_policy_attachment" "ec2_full_access_attach" {
+  role       = aws_iam_role.ec2_secrets_role.name
+  policy_arn = aws_iam_policy.ec2_full_access_policy.arn
+}
+
+
+resource "aws_iam_role_policy_attachment" "secrets_policy_attach" {
+  role       = aws_iam_role.ec2_secrets_role.name
+  policy_arn = aws_iam_policy.secretsmanager_policy.arn
+}
 
 
 resource "aws_iam_policy_attachment" "ec2-full-access" {
