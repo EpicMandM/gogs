@@ -1,6 +1,6 @@
 ---
-- name: Playbook for load balancer 
-  hosts: lb
+- name: Playbook for load balancer
+  hosts: _lb
   become: yes
   roles:
     - ../roles/lb

@@ -1,6 +1,6 @@
 ---
 - name: Playbook for apps
-  hosts: app
+  hosts: _app
   become: yes
   roles:
     - ../roles/app

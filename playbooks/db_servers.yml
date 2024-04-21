@@ -1,6 +1,6 @@
 ---
 - name: Playbook for database
-  hosts: db
+  hosts: _db
   become: yes
   roles:
     - ../roles/db
