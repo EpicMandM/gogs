@@ -144,6 +144,30 @@ resource "aws_route_table_association" "gogs_public_route_association" {
   route_table_id = aws_route_table.gogs_public_route_table.id
 }
 
+resource "aws_eip" "nat_gateway_eip" {
+}
+
+resource "aws_nat_gateway" "gogs_nat_gateway" {
+  allocation_id = aws_eip.nat_gateway_eip.id
+  subnet_id     = aws_subnet.gogs_public_subnet.id
+  depends_on    = [aws_internet_gateway.gogs_gw]
+}
+
+resource "aws_route_table" "gogs_private_route_table" {
+  vpc_id = aws_vpc.gogs_vpc.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.gogs_nat_gateway.id
+  }
+}
+
+resource "aws_route_table_association" "gogs_private_route_association" {
+  subnet_id      = aws_subnet.gogs_private_subnet.id
+  route_table_id = aws_route_table.gogs_private_route_table.id
+}
+
+
 resource "aws_security_group" "lb_security_group" {
   name        = "lb-security-group"
   description = "Security group for EC2 Load Balancer"
