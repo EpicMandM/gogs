@@ -272,4 +272,6 @@ resource "aws_instance" "ansible-control-node" {
   associate_public_ip_address = true
   security_groups             = [aws_security_group.lb_security_group.id]
   iam_instance_profile        = aws_iam_instance_profile.ec2_secrets_profile.name
+
+  user_data = filebase64("${path.module}/install-ansible.sh")
 }
