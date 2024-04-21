@@ -1,7 +1,7 @@
 ---
 - name: Install postgresql-server package
   dnf:
-    name: postgresql-server
+    name: postgresql15-server
     state: present
 
 - name: Find out if PostgreSQL is initialized

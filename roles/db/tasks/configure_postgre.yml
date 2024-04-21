@@ -1,12 +1,4 @@
 ---
-- name: Add port to firewall
-  firewalld:
-    port: 5432/tcp
-    zone: public
-    permanent: yes
-    state: enabled
-  notify: Reload firewalld
-
 - name: Update pg_hba.conf
   lineinfile:
     path: /var/lib/pgsql/data/pg_hba.conf
