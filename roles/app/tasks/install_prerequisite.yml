@@ -17,13 +17,6 @@
     mode: get
     force: yes
 
-- name: Ensure the Gogs directory exists
-  ansible.builtin.file:
-    path: /opt/gogs
-    state: directory
-    owner: gogs
-    group: gogs
-
 - name: Unarchive Gogs from the downloaded zip
   ansible.builtin.unarchive:
     src: /tmp/gogs.zip
