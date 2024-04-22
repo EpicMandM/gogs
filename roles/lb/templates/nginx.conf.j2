@@ -26,6 +26,11 @@ http {
     tcp_nodelay         on;
     keepalive_timeout   65;
     types_hash_max_size 4096;
+    client_max_body_size 100M;
+    proxy_buffer_size   128k;
+    proxy_buffers   4 256k;
+    proxy_busy_buffers_size   256k;
+
 
     include             /etc/nginx/mime.types;
     default_type        application/octet-stream;
