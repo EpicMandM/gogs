@@ -147,11 +147,6 @@ resource "aws_iam_policy_attachment" "ec2-full-access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
   roles      = [aws_iam_role.gogs-for-ec2.name]
 }
-resource "aws_iam_policy_attachment" "ec2-full-access" {
-  name       = "ec2-full-access-attachment"
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
-  roles      = [aws_iam_role.gogs-for-ec2.name]
-}
 
 resource "aws_iam_instance_profile" "gogs-for-ec2" {
   name = "gogs-for-ec2-instance-profile"
