@@ -1,7 +1,7 @@
 ---
 - name: Install postgre client
   dnf:
-    name: postgresql
+    name: postgresql15
     state: present
 
 - name: Install git
