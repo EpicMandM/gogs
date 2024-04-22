@@ -8,6 +8,7 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+# Update the system
 echo "Updating the system..."
 yum update -y
 
@@ -31,6 +32,6 @@ chmod 600 ~/.ssh/id_rsa
 export VAULT_PASSWORD='${vault_password}'
 
 echo "Running Ansible playbook..."
-ansible-playbook -i inventory/aws_ec2.yml -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"' --vault-password-file=<(echo $VAULT_PASSWORD) site.yml
+ansible-playbook -i inventory/aws_ec2.yml -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"' --vault-password-file=<(echo "$vault_password") site.yml
 
 echo "Script completed successfully."
