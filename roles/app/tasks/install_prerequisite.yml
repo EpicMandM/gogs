@@ -13,6 +13,35 @@
   aws_s3:
     bucket: gogs-artifact
     object: /gogs
-    dest: /opt/gogs/gogs
+    dest: /tmp/gogs.zip
     mode: get
     force: yes
+
+- name: Ensure the Gogs directory exists
+  ansible.builtin.file:
+    path: /opt/gogs
+    state: directory
+    owner: gogs
+    group: gogs
+
+- name: Unarchive Gogs from the downloaded zip
+  ansible.builtin.unarchive:
+    src: /tmp/gogs.zip
+    dest: /opt/gogs
+    remote_src: yes
+    extra_opts:
+      - --strip-components=1
+    creates: /opt/gogs/gogs
+
+- name: Set executable permissions on the Gogs binary
+  ansible.builtin.file:
+    path: /opt/gogs/gogs
+    mode: '0755'
+    owner: gogs
+    group: gogs
+    state: file
+
+- name: Remove the downloaded zip file
+  ansible.builtin.file:
+    path: /tmp/gogs.zip
+    state: absent
