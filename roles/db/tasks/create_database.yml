@@ -18,33 +18,13 @@
   become: true
   become_user: postgres
 
-- name: 'Create schema in the database'
-  community.postgresql.postgresql_schema:
-    name: '{{ db_schema }}'
-    database: '{{ db_name }}'
-    state: present
-  become: true
-  become_user: postgres
-
 - name: 'Grant db user access to app db'
   community.postgresql.postgresql_privs:
-    type: schema
+    type: database
     database: '{{ db_name }}'
-    schema: '{{ db_schema }}'
     roles: '{{ db_user }}'
     grant_option: no
-    privs: 'ALL'
-  become: true
-  become_user: postgres
-
-- name: 'Grant db user access to all tables in the schema'
-  community.postgresql.postgresql_privs:
-    type: table
-    database: '{{ db_name }}'
-    schema: '{{ db_schema }}'
-    objs: ALL_IN_SCHEMA
-    roles: '{{ db_user }}'
-    privs: 'ALL'
+    privs: all
   become: true
   become_user: postgres
   notify: Restart PostgreSQL
