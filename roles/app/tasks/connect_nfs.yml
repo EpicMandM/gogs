@@ -28,7 +28,7 @@
 
 - name: Install nfs-common to support NFS
   ansible.builtin.package:
-    name: nfs-common
+    name: nfs-utils
     state: present
 
 - name: Mount EFS filesystems
