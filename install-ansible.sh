@@ -4,7 +4,7 @@ cd gogs
 aws secretsmanager get-secret-value --secret-id app-key-pair | jq -r '.SecretString' > ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
 
-VAULT_PASSWORD=$(aws secretsmanager get-secret-value --secret-id ansible-vault-password --query 'SecretString' --output text)
+VAULT_PASSWORD=$(aws secretsmanager get-secret-value --secret-id ansible-vault-password --query 'SecretString' --output text | jq -r '.["ansible-vault-password"]')
 
 if [ $? -ne 0 ]; then
     echo "Failed to retrieve the vault password from AWS Secrets Manager"
