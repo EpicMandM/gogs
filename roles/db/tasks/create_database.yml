@@ -3,29 +3,48 @@
   include_vars:
     file: ../../inventory/group_vars/dbvars.yml
 
-- name: "Create app database"
+- name: 'Create app database'
   community.postgresql.postgresql_db:
     state: present
-    name: "{{ db_name }}"
+    name: '{{ db_name }}'
   become: true
   become_user: postgres
 
-- name: "Create db user"
+- name: 'Create db user'
   community.postgresql.postgresql_user:
     state: present
-    name: "{{ db_user }}"
-    password: "{{ db_password }}"
+    name: '{{ db_user }}'
+    password: '{{ db_password }}'
   become: true
   become_user: postgres
 
-- name: "Grant db user access to app db"
+- name: 'Create schema in the database'
+  community.postgresql.postgresql_schema:
+    name: '{{ db_schema }}'
+    database: '{{ db_name }}'
+    state: present
+  become: true
+  become_user: postgres
+
+- name: 'Grant db user access to app db'
   community.postgresql.postgresql_privs:
-    type: database
-    database: "{{ db_name }}"
-    roles: "{{ db_user }}"
+    type: schema
+    database: '{{ db_name }}'
+    schema: '{{ db_schema }}'
+    roles: '{{ db_user }}'
     grant_option: no
-    privs: all
+    privs: 'ALL'
+  become: true
+  become_user: postgres
+
+- name: 'Grant db user access to all tables in the schema'
+  community.postgresql.postgresql_privs:
+    type: table
+    database: '{{ db_name }}'
+    schema: '{{ db_schema }}'
+    objs: ALL_IN_SCHEMA
+    roles: '{{ db_user }}'
+    privs: 'ALL'
   become: true
   become_user: postgres
   notify: Restart PostgreSQL
-
