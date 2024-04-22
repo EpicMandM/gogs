@@ -13,11 +13,6 @@
   aws_s3:
     bucket: gogs-artifact
     object: /gogs
-    dest: /tmp/gogs
+    dest: /opt/gogs/gogs
     mode: get
-
-- name: Unpack Gogs archive
-  unarchive:
-    src: /tmp/gogs_0.13.0_linux_amd64.zip
-    dest: /opt
-    remote_src: yes
+    force: yes
