@@ -56,7 +56,9 @@ resource "aws_iam_policy" "efs_access_policy" {
           "elasticfilesystem:DescribeFileSystems",
           "elasticfilesystem:ClientMount",
           "elasticfilesystem:ClientWrite",
-          "elasticfilesystem:DescribeTags"
+          "elasticfilesystem:DescribeTags",
+          "elasticfilesystem:DescribeMountTargets",
+          "elasticfilesystem:DescribeMountTargetSecurityGroups"
         ],
         Resource = "*"
       }
