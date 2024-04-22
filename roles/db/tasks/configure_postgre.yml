@@ -1,12 +1,14 @@
 ---
 - name: Grant schema access to PostgreSQL user
   postgresql_privs:
-    type: schema
+    type: table
     schema: public
     roles: gogsapp
     objs: ALL_IN_SCHEMA
     privs: ALL
     database: gogsapp
+  become: true
+  become_user: postgres
 
 - name: Update pg_hba.conf
   lineinfile:
