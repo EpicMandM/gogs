@@ -53,6 +53,7 @@ resource "aws_iam_policy" "efs_access_policy" {
       {
         Effect   = "Allow",
         Action   = [
+          "elasticfilesystem:DescribeFileSystems",
           "elasticfilesystem:ClientMount",
           "elasticfilesystem:ClientWrite",
           "elasticfilesystem:DescribeTags"
