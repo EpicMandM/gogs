@@ -4,26 +4,6 @@ phases:
   install:
     runtime-versions:
       python: 3.x
-    commands:
-      # Update the system packages
-      - echo "Updating the system..."
-      - yum update -y
-
-      # Install Python3 and pip (pip is included with Python3 install from Python3.6+)
-      - echo "Installing Python3 and pip..."
-      - yum install -y python3 python3-pip
-
-      # Install Ansible and dependencies
-      - echo "Installing Ansible and dependencies..."
-      - pip3 install ansible boto3 botocore
-
-      # Verify Ansible installation
-      - echo "Verifying Ansible installation..."
-      - ansible --version
-
-      # Install git
-      - echo "Installing git..."
-      - yum install -y git
 
   pre_build:
     commands:
