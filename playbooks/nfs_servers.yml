@@ -1,6 +1,0 @@
----
-- name: Playbook for nfs
-  hosts: _nfs
-  become: yes
-  roles:
-    - ../roles/nfs

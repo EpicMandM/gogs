@@ -1,3 +1,0 @@
----
-- import_tasks: install_nfs_utils.yml
-- import_tasks: configure_nfs.yml

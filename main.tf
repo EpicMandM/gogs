@@ -43,7 +43,25 @@ resource "aws_iam_role" "ec2_secrets_role" {
   })
 }
 
+resource "aws_iam_policy" "efs_access_policy" {
+  name        = "EFSAccessPolicy"
+  description = "Policy to allow EC2 instances to access EFS"
 
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = [
+          "elasticfilesystem:DescribeFileSystems",
+          "elasticfilesystem:ClientMount",
+          "elasticfilesystem:ClientWrite"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
 
 resource "aws_iam_policy" "secretsmanager_policy" {
   name        = "SecretsManagerAccessPolicy"
@@ -80,6 +98,10 @@ resource "aws_iam_policy" "ec2_full_access_policy" {
   })
 }
 
+resource "aws_iam_role_policy_attachment" "efs_access_attach" {
+  role       = aws_iam_role.gogs-for-ec2.name
+  policy_arn = aws_iam_policy.efs_access_policy.arn
+}
 
 resource "aws_iam_role_policy_attachment" "ec2_full_access_attach" {
   role       = aws_iam_role.ec2_secrets_role.name
@@ -205,6 +227,7 @@ resource "aws_security_group" "lb_security_group" {
   }
 }
 
+
 resource "aws_security_group" "ec2_security_group" {
   name        = "ec2-security-group"
   description = "Security group for EC2 instances"
@@ -230,6 +253,31 @@ resource "aws_security_group" "ec2_security_group" {
 }
 
 
+resource "aws_security_group_rule" "allow_nfs" {
+  type              = "ingress"
+  from_port         = 2049
+  to_port           = 2049
+  protocol          = "tcp"
+  security_group_id = aws_security_group.ec2_security_group.id
+  cidr_blocks       = [aws_vpc.gogs_vpc.cidr_block]  # Adjust as necessary
+}
+
+resource "aws_efs_file_system" "nfs_shares" {
+  creation_token = "nfs_shares"
+
+  tags = {
+    Name = "nfs_shares"
+  }
+}
+
+resource "aws_efs_mount_target" "nfs_shares_targets" {
+  for_each           = { for subnet in [aws_subnet.gogs_private_subnet] : subnet.id => subnet }
+  file_system_id     = aws_efs_file_system.nfs_shares.id
+  subnet_id          = each.value.id
+  security_groups    = [aws_security_group.ec2_security_group.id]
+}
+
+
 resource "aws_instance" "lb1" {
   ami                         = "ami-051f8a213df8bc089"
   instance_type               = "t2.micro"
@@ -242,20 +290,6 @@ resource "aws_instance" "lb1" {
   tags = {
     Role = "lb"
     Name = "lb1"
-  }
-}
-
-resource "aws_instance" "nfs1" {
-  ami                    = "ami-051f8a213df8bc089"
-  instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.gogs_private_subnet.id
-  key_name               = "app-key-pair"
-  iam_instance_profile   = aws_iam_instance_profile.gogs-for-ec2.name
-  vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
-
-  tags = {
-    Role = "nfs"
-    Name = "nfs1"
   }
 }
 

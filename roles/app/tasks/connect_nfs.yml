@@ -1,19 +1,23 @@
 ---
+- name: Gather information about all EFS filesystems
+  community.aws.efs_info:
+  register: efs_info
 
-- name: Install nfs-utils package
-  dnf:
-    name: nfs-utils
+- name: Debug - Print EFS Information
+  ansible.builtin.debug:
+    msg: '{{ efs_info }}'
+
+- name: Install nfs-common to support NFS
+  ansible.builtin.package:
+    name: nfs-common
     state: present
 
-- name: Install nfs4-acl-tools package
-  dnf:
-    name: nfs4-acl-tools
-    state: present
-
-- name: Mount NFS share
-  mount:
-    src: "{{ hostvars['nfs1'].ansible_host }}:/mnt/nfs_shares"
-    path: /mnt/nfs_share
-    fstype: nfs
-    opts: defaults
+- name: Mount EFS filesystems
+  ansible.posix.mount:
+    path: '/mnt/{{ item.name }}'
+    src: '{{ item.dns_name }}:/'
+    fstype: 'nfs4'
+    opts: 'defaults'
     state: mounted
+  loop: '{{ efs_info.efs }}'
+  when: efs_info.efs is defined
