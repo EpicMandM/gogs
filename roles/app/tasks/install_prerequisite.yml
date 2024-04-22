@@ -15,11 +15,6 @@
       - boto3
       - botocore
     state: present
-
-- name: Set Python interpreter explicitly
-  set_fact:
-    ansible_python_interpreter: '/home/tim/pycharm_projects/django_api_sync/ansible/venv/bin/python3'
-
 - name: Install postgre client
   dnf:
     name: postgresql
