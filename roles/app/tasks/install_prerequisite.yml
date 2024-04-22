@@ -14,10 +14,7 @@
     name:
       - boto3
       - botocore
-<<<<<<< HEAD
-=======
     state: present
->>>>>>> 01c0691c9765b372c1a3640ee94ae35d51a873cd
     extra_args: '--user'
 
 - name: Set Python interpreter explicitly
