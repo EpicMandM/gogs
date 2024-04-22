@@ -1,7 +1,9 @@
 ---
 - name: Gather information about all EFS filesystems
   community.aws.efs_info:
-  register: efs_info
+    region: us-east-1
+  environment:
+    AWS_REGION: us-east-1
 
 - name: Debug - Print EFS Information
   ansible.builtin.debug:

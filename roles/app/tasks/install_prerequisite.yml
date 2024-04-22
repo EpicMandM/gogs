@@ -20,10 +20,6 @@
   set_fact:
     ansible_python_interpreter: '/usr/bin/python3'
 
-- name: Gather information about all EFS filesystems
-  community.aws.efs_info:
-    region: us-east-1
-
 - name: Install postgre client
   dnf:
     name: postgresql
