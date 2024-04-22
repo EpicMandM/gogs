@@ -113,12 +113,6 @@ resource "aws_iam_role_policy_attachment" "secrets_policy_attach" {
   policy_arn = aws_iam_policy.secretsmanager_policy.arn
 }
 
-resource "aws_iam_role_policy_attachment" "secrets_policy_attach" {
-  role       = aws_iam_role.ec2_secrets_role.name
-  policy_arn = aws_iam_policy.secretsmanager_policy.arn
-}
-
-
 resource "aws_iam_policy_attachment" "ec2-full-access" {
   name       = "ec2-full-access-attachment"
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
