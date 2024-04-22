@@ -3,12 +3,10 @@
   postgresql_privs:
     type: schema
     schema: public
-    name: gogsapp
+    roles: gogsapp
     objs: ALL_IN_SCHEMA
     privs: ALL
     database: gogsapp
-  become: true
-  become_user: postgres
 
 - name: Update pg_hba.conf
   lineinfile:
