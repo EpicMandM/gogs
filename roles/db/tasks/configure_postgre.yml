@@ -6,7 +6,7 @@
     name: gogsapp
     objs: ALL_IN_SCHEMA
     privs: ALL
-    database: gogs_db
+    database: gogsapp
   become: true
   become_user: postgres
 
