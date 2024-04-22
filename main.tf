@@ -13,7 +13,6 @@ terraform {
 
 resource "aws_iam_role" "gogs-for-ec2" {
   name = "gogs-for-ec2"
-
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
@@ -28,25 +27,21 @@ resource "aws_iam_role" "gogs-for-ec2" {
 
 resource "aws_iam_role" "ec2_secrets_role" {
   name = "EC2SecretsManagerRole"
-
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
-    Statement = [
-      {
-        Effect    = "Allow",
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        },
-        Action    = "sts:AssumeRole"
-      }
-    ]
+    Statement = [{
+      Effect    = "Allow",
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      },
+      Action    = "sts:AssumeRole"
+    }]
   })
 }
 
 resource "aws_iam_policy" "efs_access_policy" {
   name        = "EFSAccessPolicy"
   description = "Policy to allow EC2 instances to access EFS"
-
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -55,7 +50,8 @@ resource "aws_iam_policy" "efs_access_policy" {
         Action   = [
           "elasticfilesystem:DescribeFileSystems",
           "elasticfilesystem:ClientMount",
-          "elasticfilesystem:ClientWrite"
+          "elasticfilesystem:ClientWrite",
+          "elasticfilesystem:DescribeTags" // New rule added here
         ],
         Resource = "*"
       }
@@ -66,35 +62,16 @@ resource "aws_iam_policy" "efs_access_policy" {
 resource "aws_iam_policy" "secretsmanager_policy" {
   name        = "SecretsManagerAccessPolicy"
   description = "Policy to access specific secrets in Secrets Manager"
-
   policy = jsonencode({
     Version = "2012-10-17",
-    Statement = [
-      {
-        Effect    = "Allow",
-        Action    = [
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret"
-        ],
-        Resource  = "arn:aws:secretsmanager:us-east-1:577317039358:secret:app-key-pair-OtDRMy"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_policy" "ec2_full_access_policy" {
-  name        = "EC2FullAccessPolicy"
-  description = "Policy granting full access to EC2 instances"
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect   = "Allow",
-        Action   = "ec2:*",
-        Resource = "*"
-      }
-    ]
+    Statement = [{
+      Effect    = "Allow",
+      Action    = [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+      ],
+      Resource  = "arn:aws:secretsmanager:us-east-1:577317039358:secret:app-key-pair-OtDRMy"
+    }]
   })
 }
 
@@ -103,20 +80,9 @@ resource "aws_iam_role_policy_attachment" "efs_access_attach" {
   policy_arn = aws_iam_policy.efs_access_policy.arn
 }
 
-resource "aws_iam_role_policy_attachment" "ec2_full_access_attach" {
-  role       = aws_iam_role.ec2_secrets_role.name
-  policy_arn = aws_iam_policy.ec2_full_access_policy.arn
-}
-
 resource "aws_iam_role_policy_attachment" "secrets_policy_attach" {
   role       = aws_iam_role.ec2_secrets_role.name
   policy_arn = aws_iam_policy.secretsmanager_policy.arn
-}
-
-resource "aws_iam_policy_attachment" "ec2-full-access" {
-  name       = "ec2-full-access-attachment"
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
-  roles      = [aws_iam_role.gogs-for-ec2.name]
 }
 
 resource "aws_iam_instance_profile" "gogs-for-ec2" {
