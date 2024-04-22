@@ -1,7 +1,24 @@
 ---
+- name: Ensure Python is installed
+  ansible.builtin.package:
+    name: python3
+    state: present
+
+- name: Ensure pip is installed
+  ansible.builtin.package:
+    name: python3-pip
+    state: present
+
+- name: Install required Python libraries
+  ansible.builtin.pip:
+    name:
+      - boto3
+      - botocore
+    state: present
+
 - name: Set Python interpreter explicitly
   set_fact:
-    ansible_python_interpreter: '/usr/bin/python'
+    ansible_python_interpreter: '/usr/bin/python3'
 
 - name: Gather information about all EFS filesystems
   community.aws.efs_info:
