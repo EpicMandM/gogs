@@ -37,7 +37,7 @@ http {
 
     upstream gogs_backend {
     ip_hash;
-    {% for host in groups['app'] %}
+    {% for host in groups['_app'] %}
     server {{ hostvars[host].ansible_host }}:3000;
     {% endfor %}
   }
