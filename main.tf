@@ -268,12 +268,12 @@ resource "aws_efs_file_system" "nfs_shares" {
   }
 }
 
-resource "aws_efs_mount_target" "nfs_shares_targets" {
-  for_each           = { for subnet in [aws_subnet.gogs_private_subnet] : subnet.id => subnet }
-  file_system_id     = aws_efs_file_system.nfs_shares.id
-  subnet_id          = each.value.id
-  security_groups    = [aws_security_group.ec2_security_group.id]
+resource "aws_efs_mount_target" "nfs_shares_target" {
+  file_system_id  = aws_efs_file_system.nfs_shares.id
+  subnet_id       = aws_subnet.gogs_private_subnet.id
+  security_groups = [aws_security_group.ec2_security_group.id]
 }
+
 
 
 resource "aws_instance" "lb1" {
