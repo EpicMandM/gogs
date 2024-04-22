@@ -28,7 +28,7 @@ phases:
   pre_build:
     commands:
       - chmod +x ./install-ansible.sh
-      - aws secretsmanager get-secret-value --secret-id app-key-pair | jq -r '.SecretString' > ~/.ssh/id_rsa
+      - aws secretsmanager get-secret-value --secret-id app-key-pair | jq -r '.SecretString' > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
       # Get the public IP of the EC2 instance
       - >
         INSTANCE_IP=$(aws ec2 describe-instances --query "Reservations[*].Instances[*].PublicIpAddress"
