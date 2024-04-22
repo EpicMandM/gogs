@@ -15,9 +15,9 @@ ROOT           = /mnt/nfs_share/gogs-repositories
 DEFAULT_BRANCH = master
 
 [server]
-DOMAIN           = {{ groups['_lb'][0].public_dns_name }}
+DOMAIN           = {{ hostvars['lb1'].ansible_host }}
 HTTP_PORT        = 3000
-EXTERNAL_URL     = http://{{ groups['_lb'][0].public_dns_name }}:3000/
+EXTERNAL_URL     = http://{{ hostvars['lb1'].ansible_host }}:3000/
 DISABLE_SSH      = false
 SSH_PORT         = 22
 START_SSH_SERVER = false
