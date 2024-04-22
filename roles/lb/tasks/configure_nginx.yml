@@ -1,12 +1,4 @@
 ---
-- name: Open port 80/tcp
-  firewalld:
-    port: 80/tcp
-    zone: public
-    permanent: yes
-    state: enabled
-  become: true
-
 - name: Copy NGINX configuration
   template:
     src: nginx.conf.j2
@@ -15,7 +7,7 @@
     group: root
     mode: 0644
   notify: Reload NGINX
-  
+
 - name: Set httpd_can_network_connect SELinux boolean
   become: true
   seboolean:
