@@ -108,20 +108,21 @@ resource "aws_iam_policy" "s3-download-policy" {
   name        = "s3-download-policy"
   description = "Policy to allow downloading from S3 bucket"
 
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Action = [
-        "s3:ListBucket",
-        "s3:GetObject",
-        "s3:HeadBucket"
-      ],
-      Resource = [
-        "arn:aws:s3:::gogs-artifact",
-        "arn:aws:s3:::gogs-artifact/*"
-      ]
-    }]
+    policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:ListBucket",
+          "s3:GetObject",
+        ]
+        Effect   = "Allow"
+        Resource = [
+          "arn:aws:s3:::gogs-artifact",
+          "arn:aws:s3:::gogs-artifact/*"
+        ]
+      }
+    ]
   })
 }
 
