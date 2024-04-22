@@ -15,6 +15,7 @@
       - boto3
       - botocore
     state: present
+    extra_args: '--user'
 
 - name: Set Python interpreter explicitly
   set_fact:
