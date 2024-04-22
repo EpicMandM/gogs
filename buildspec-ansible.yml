@@ -7,7 +7,7 @@ phases:
 
   pre_build:
     commands:
-      - chmod +x ./install-ansible.sh
+      - chmod +x ./install-ansible.sh ./configure-ansible.sh
       - aws secretsmanager get-secret-value --secret-id app-key-pair | jq -r '.SecretString' > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
       # Get the public IP of the EC2 instance
       - >
@@ -16,4 +16,5 @@ phases:
         --output text)
   build:
     commands:
-      - ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_IP 'sudo bash -s' < ./install-ansible.sh
+      - ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_IP 'sudo bash -s' < ./configure-ansible.sh
+      - ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_IP 'bash -s' < ./install-ansible.sh
