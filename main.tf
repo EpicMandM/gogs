@@ -104,6 +104,29 @@ resource "aws_iam_policy" "ec2_full_access_policy" {
   })
 }
 
+resource "aws_iam_policy" "s3-download-policy" {
+  name        = "s3-download-policy"
+  description = "Policy to allow downloading from S3 bucket"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect   = "Allow",
+      Action   = [
+        "s3:GetObject",
+        "s3:GetObjectVersion"
+      ],
+      Resource = "arn:aws:s3:::gogs-artifact/*"
+    }]
+  })
+}
+
+resource "aws_iam_policy_attachment" "s3-download-policy-attachment" {
+  name       = "s3-download-policy-attachment"
+  policy_arn = aws_iam_policy.s3-download-policy.arn
+  roles      = [aws_iam_role.gogs-for-ec2.name]
+}
+
 resource "aws_iam_role_policy_attachment" "efs_access_attach" {
   role       = aws_iam_role.gogs-for-ec2.name
   policy_arn = aws_iam_policy.efs_access_policy.arn
@@ -119,6 +142,11 @@ resource "aws_iam_role_policy_attachment" "secrets_policy_attach" {
   policy_arn = aws_iam_policy.secretsmanager_policy.arn
 }
 
+resource "aws_iam_policy_attachment" "ec2-full-access" {
+  name       = "ec2-full-access-attachment"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+  roles      = [aws_iam_role.gogs-for-ec2.name]
+}
 resource "aws_iam_policy_attachment" "ec2-full-access" {
   name       = "ec2-full-access-attachment"
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
