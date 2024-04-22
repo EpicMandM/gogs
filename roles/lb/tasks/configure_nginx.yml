@@ -3,8 +3,8 @@
   template:
     src: nginx.conf.j2
     dest: /etc/nginx/nginx.conf
-    owner: ec2-user%%ee
-    group: ec2-user
+    owner: root
+    group: root
     mode: 0644
   notify: Reload NGINX
 

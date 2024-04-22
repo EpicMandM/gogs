@@ -67,11 +67,11 @@ fi
 echo "$SSH_KEY" > ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
 
-# Executes the Ansible playbook with a specific inventory and extra arguments.
-# echo "Running Ansible playbook..."
-# if ! ansible-playbook -i inventory/aws_ec2.yml -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"' site.yml; then
-#     echo "Failed to execute Ansible playbook. Exiting."
-#     exit 1
-# fi
+Executes the Ansible playbook with a specific inventory and extra arguments.
+echo "Running Ansible playbook..."
+if ! ansible-playbook -i inventory/aws_ec2.yml -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"' site.yml; then
+    echo "Failed to execute Ansible playbook. Exiting."
+    exit 1
+fi
 
-# echo "Script completed successfully."
+echo "Script completed successfully."

@@ -1,12 +1,12 @@
 BRAND_NAME = Gogs
-RUN_USER   = root
+RUN_USER   = ec2-user
 RUN_MODE   = prod
 
 [database]
 TYPE     = postgres
 HOST     = {{ hostvars['db1'].ansible_host }}:5432
 NAME     = gogsapp
-SCHEMA   = public
+SCHEMA   = psublic
 USER     = gogsapp
 PASSWORD = gogspass
 SSL_MODE = disable
