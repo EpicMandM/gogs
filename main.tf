@@ -329,6 +329,13 @@ resource "aws_instance" "appgogs" {
   }
 }
 
+data "template_file" "init_script" {
+  template = file("${path.module}/install-ansible.tpl")
+  vars = {
+    vault_password = var.vault_password
+  }
+}
+
 resource "aws_instance" "ansible-control-node" {
   ami                         = "ami-051f8a213df8bc089"
   instance_type               = "t2.micro"
@@ -338,5 +345,5 @@ resource "aws_instance" "ansible-control-node" {
   security_groups             = [aws_security_group.lb_security_group.id]
   iam_instance_profile        = aws_iam_instance_profile.ec2_secrets_profile.name
 
-  user_data = filebase64("${path.module}/install-ansible.sh")
+  user_data = data.template_file.init_script.rendered
 }
