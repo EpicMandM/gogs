@@ -1,0 +1,39 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.x
+    commands:
+      # Update the system packages
+      - echo "Updating the system..."
+      - yum update -y
+
+      # Install Python3 and pip (pip is included with Python3 install from Python3.6+)
+      - echo "Installing Python3 and pip..."
+      - yum install -y python3 python3-pip
+
+      # Install Ansible and dependencies
+      - echo "Installing Ansible and dependencies..."
+      - pip3 install ansible boto3 botocore
+
+      # Verify Ansible installation
+      - echo "Verifying Ansible installation..."
+      - ansible --version
+
+      # Install git
+      - echo "Installing git..."
+      - yum install -y git
+
+  pre_build:
+    commands:
+      - chmod +x ./install-ansible.sh
+      - aws secretsmanager get-secret-value --secret-id app-key-pair | jq -r '.SecretString' > ~/.ssh/id_rsa
+      # Get the public IP of the EC2 instance
+      - >
+        INSTANCE_IP=$(aws ec2 describe-instances --query "Reservations[*].Instances[*].PublicIpAddress"
+        --filters "Name=tag:Name,Values=ansible-control-node" "Name=instance-state-name,Values=running"
+        --output text)
+  build:
+    commands:
+      - ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_IP 'bash -s' < ./install-ansible.sh
