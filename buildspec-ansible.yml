@@ -16,5 +16,4 @@ phases:
         --output text)
   build:
     commands:
-      - ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_IP 'sudo bash -s' < ./configure-ansible.sh
-      - ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_IP 'bash -s' < ./install-ansible.sh
+      - ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_IP 'sudo bash -s' < ./configure-ansible.sh && ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_IP 'bash -s' < ./install-ansible.sh
