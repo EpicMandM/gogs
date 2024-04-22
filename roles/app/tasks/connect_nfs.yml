@@ -1,7 +1,7 @@
 ---
 - name: Set Python interpreter explicitly
   set_fact:
-    ansible_python_interpreter: '/home/tim/pycharm_projects/django_api_sync/ansible/venv/bin/python3'
+    ansible_python_interpreter: '/usr/bin/python'
 
 - name: Gather information about all EFS filesystems
   community.aws.efs_info:
