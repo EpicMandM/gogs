@@ -59,12 +59,7 @@ fi
 
 # Fetches SSH key from AWS Secrets Manager and configures it for use.
 echo "Configuring SSH key for repository access..."
-SSH_KEY=$(aws secretsmanager get-secret-value --secret-id app-key-pair | jq -r '.SecretString')
-if [ -z "$SSH_KEY" ]; then
-    echo "Failed to retrieve SSH key. Exiting."
-    exit 1
-fi
-echo "$SSH_KEY" > ~/.ssh/id_rsa
+aws secretsmanager get-secret-value --secret-id app-key-pair | jq -r '.SecretString' > ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
 
 Executes the Ansible playbook with a specific inventory and extra arguments.
