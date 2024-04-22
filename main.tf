@@ -33,11 +33,11 @@ resource "aws_iam_role" "ec2_secrets_role" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect    = "Allow",
+        Effect = "Allow",
         Principal = {
           Service = "ec2.amazonaws.com"
         },
-        Action    = "sts:AssumeRole"
+        Action = "sts:AssumeRole"
       }
     ]
   })
@@ -51,8 +51,8 @@ resource "aws_iam_policy" "efs_access_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect   = "Allow",
-        Action   = [
+        Effect = "Allow",
+        Action = [
           "elasticfilesystem:DescribeFileSystems",
           "elasticfilesystem:ClientMount",
           "elasticfilesystem:ClientWrite",
@@ -74,12 +74,12 @@ resource "aws_iam_policy" "secretsmanager_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect    = "Allow",
-        Action    = [
+        Effect = "Allow",
+        Action = [
           "secretsmanager:GetSecretValue",
           "secretsmanager:DescribeSecret"
         ],
-        Resource  = [
+        Resource = [
           "arn:aws:secretsmanager:us-east-1:577317039358:secret:app-key-pair-OtDRMy",
           "arn:aws:secretsmanager:us-east-1:577317039358:secret:ansible-vault-password-5OTz8O"
         ]
@@ -111,12 +111,16 @@ resource "aws_iam_policy" "s3-download-policy" {
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect   = "Allow",
-      Action   = [
+      Effect = "Allow",
+      Action = [
+        "s3:ListBucket",
         "s3:GetObject",
-        "s3:GetObjectVersion"
+        "s3:HeadBucket"
       ],
-      Resource = "arn:aws:s3:::gogs-artifact/*"
+      Resource = [
+        "arn:aws:s3:::gogs-artifact",
+        "arn:aws:s3:::gogs-artifact/*"
+      ]
     }]
   })
 }
@@ -266,14 +270,14 @@ resource "aws_security_group" "ec2_security_group" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-    ingress {
+  ingress {
     from_port   = 3000
     to_port     = 3000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-    ingress {
+  ingress {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
@@ -299,7 +303,7 @@ resource "aws_security_group_rule" "allow_nfs" {
   to_port           = 2049
   protocol          = "tcp"
   security_group_id = aws_security_group.ec2_security_group.id
-  cidr_blocks       = [aws_vpc.gogs_vpc.cidr_block]  # Adjust as necessary
+  cidr_blocks       = [aws_vpc.gogs_vpc.cidr_block] # Adjust as necessary
 }
 
 resource "aws_efs_file_system" "nfs_shares" {
@@ -371,7 +375,7 @@ resource "aws_instance" "ansible-control-node" {
   security_groups             = [aws_security_group.lb_security_group.id]
   iam_instance_profile        = aws_iam_instance_profile.ec2_secrets_profile.name
 
-    tags = {
+  tags = {
     Name = "ansible-control-node"
   }
 }
