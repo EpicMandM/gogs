@@ -2,5 +2,6 @@
 - name: Playbook for apps
   hosts: _app
   become: yes
+  gather_facts: true
   roles:
     - ../roles/app
