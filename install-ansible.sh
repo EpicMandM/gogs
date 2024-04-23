@@ -1,4 +1,5 @@
 echo "Cloning repository and configuring SSH key..."
+rm -rf gogs
 git clone https://github.com/EpicMandM/gogs.git
 cd gogs
 aws secretsmanager get-secret-value --secret-id app-key-pair | jq -r '.SecretString' > ~/.ssh/id_rsa
