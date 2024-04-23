@@ -22,6 +22,7 @@
     src: /tmp/gogs.zip
     dest: /opt/gogs
     remote_src: yes
+    extra_opts: []
 
 - name: Set executable permissions on the Gogs binary
   ansible.builtin.file:
