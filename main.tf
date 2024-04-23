@@ -304,7 +304,7 @@ resource "aws_security_group_rule" "allow_nfs" {
   to_port           = 2049
   protocol          = "tcp"
   security_group_id = aws_security_group.ec2_security_group.id
-  cidr_blocks       = [aws_vpc.gogs_vpc.cidr_block] # Adjust as necessary
+  cidr_blocks       = [aws_vpc.gogs_vpc.cidr_block]
 }
 
 resource "aws_efs_file_system" "nfs_shares" {
